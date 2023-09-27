@@ -8,3 +8,6 @@
 
 # Original datasets
 /data/usa/
+
+# Local history
+.history/
