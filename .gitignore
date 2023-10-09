@@ -11,3 +11,6 @@
 
 # Local history
 .history/
+
+# IDE settings
+.vscode/
