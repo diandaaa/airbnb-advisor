@@ -3,6 +3,7 @@ import json
 # Read the schema.json to get table definitions
 SCHEMA = None
 
+
 def load_schema():
     global SCHEMA
     if SCHEMA is None:
@@ -21,14 +22,29 @@ CITIES = [
     "San Mateo County",
     "Santa Clara County",
     "Santa Cruz County",
-    "Oakland"
+    "Oakland",
 ]
+
+AIRBNB_COLORS = {
+    "main": "#FF5A5F",  # Rausch
+    "green": "#00A699",  # Babu
+    "orange": "#FC642D",  # Arches
+    "darkgrey": "#484848",  # Hof
+    "lightgrey": "#767676",  # Foggy
+}
+
 
 # Specify the database path
 DATABASE_PATH = "data/listings.sqlite"
 
 # Specify tables that can be directly loaded from the pandas dataframe without additional operations
-CORE_TABLES = ["ListingBasicInfo", "ListingLocation", "ListingAvailability", "ListingReviewScores", "ListingReviewsSummary"]
+CORE_TABLES = [
+    "ListingBasicInfo",
+    "ListingLocation",
+    "ListingAvailability",
+    "ListingReviewScores",
+    "ListingReviewsSummary",
+]
 
 # Set the types of columns for reading from CSV using pandas
 COLUMN_IMPORT_TYPES = {
@@ -101,7 +117,7 @@ COLUMN_IMPORT_TYPES = {
     "calculated_host_listings_count": "float32",
     "calculated_host_listings_count_entire_homes": "float32",
     "calculated_host_listings_count_private_rooms": "float32",
-    "calculated_host_listings_count_shared_rooms": "float32"
+    "calculated_host_listings_count_shared_rooms": "float32",
 }
 
 # Specify the columns that need to be rounded as part of the review scores table
@@ -121,9 +137,20 @@ COLUMN_TO_TABLE_MAP = {
     "neighborhood": "Neighborhoods",
     "property_type": "PropertyTypes",
     "room_type": "RoomTypes",
-    "host_response_time": "HostResponseTime"
+    "host_response_time": "HostResponseTime",
 }
 
-LOOKUP_TABLES = ["Cities", "Neighborhoods", "PropertyTypes", "RoomTypes", "HostResponseTime"]
+LOOKUP_TABLES = [
+    "Cities",
+    "Neighborhoods",
+    "PropertyTypes",
+    "RoomTypes",
+    "HostResponseTime",
+]
 
-EXTENSION_TABLES = ["ListingAvailability", "ListingLocation", "ListingReviewsSummary", "ListingReviewScores"]
+EXTENSION_TABLES = [
+    "ListingAvailability",
+    "ListingLocation",
+    "ListingReviewsSummary",
+    "ListingReviewScores",
+]
