@@ -109,9 +109,10 @@ with text_col:
 
     ### ⚠️ Disclaimer
     This app is an independent project and serves as an exploratory tool. While it aims to provide valuable insights, it is not a substitute for professional advice and nuanced understanding of individual listings.
-
-
     """
+
+    st.text("")
+    st.text("")
 
 with chart_col1:
     st.bar_chart(pivot_room_type_counts[st.session_state.selected_city])
