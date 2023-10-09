@@ -109,6 +109,8 @@ with text_col:
 
     ### ⚠️ Disclaimer
     This app is an independent project and serves as an exploratory tool. While it aims to provide valuable insights, it is not a substitute for professional advice and nuanced understanding of individual listings.
+
+
     """
 
 with chart_col1:
