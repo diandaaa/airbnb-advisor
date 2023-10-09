@@ -40,11 +40,11 @@ st.sidebar.markdown(
 )
 st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
+st.sidebar.markdown("[🌐 Visit my website!](https://benharman.dev/)")
 st.sidebar.markdown(
     f"[![LinkedIn](data:image/png;base64,{utilities.get_image_with_encoding('assets/linkedin.png')})](https://github.com/benharmandev) &nbsp;&nbsp;&nbsp; [![GitHub](data:image/png;base64,{utilities.get_image_with_encoding('assets/github.png')})](https://github.com/benharmandev)",
     unsafe_allow_html=True,
 )
-st.markdown("[🌐 Visit my website!](https://benharman.dev/)")
 
 # Establish a connection to the SQLite database
 conn = st.experimental_connection(
