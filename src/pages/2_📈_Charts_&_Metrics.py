@@ -20,7 +20,7 @@ import utilities
 # Configure the page -----------------------------------------------------------
 st.set_page_config(
     page_title="Airbnb Advisor | Charts",
-    page_icon=":bar-chart:",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="auto",
     menu_items=None,
