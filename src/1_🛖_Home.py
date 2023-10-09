@@ -33,14 +33,9 @@ st.session_state.selected_city = st.sidebar.selectbox(
 
 st.sidebar.text("")
 st.sidebar.text("")
-st.sidebar.text("")
-st.sidebar.markdown(
-    f"<img src='data:image/jpg;base64,{profile_image}' style='border-radius: 10%; width: 120px; height: 120px;'>",
-    unsafe_allow_html=True,
-)
-st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
-st.sidebar.markdown("[🌐 Visit my website!](https://benharman.dev/)")
+st.sidebar.markdown("Visit my [website](https://benharman.dev/) for more!")
+st.sidebar.text("")
 st.sidebar.markdown(
     f"[![LinkedIn](data:image/png;base64,{utilities.get_image_with_encoding('assets/linkedin.png')})](https://github.com/benharmandev) &nbsp;&nbsp;&nbsp; [![GitHub](data:image/png;base64,{utilities.get_image_with_encoding('assets/github.png')})](https://github.com/benharmandev)",
     unsafe_allow_html=True,
