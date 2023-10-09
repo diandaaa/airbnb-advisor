@@ -33,6 +33,14 @@ AIRBNB_COLORS = {
     "lightgrey": "#767676",  # Foggy
 }
 
+BENS_COLORS = {
+    "nature-green": "#236F21",
+    "tiffany-blue": "#83C5BE",
+    "alice-blue": "#EDF6F9",
+    "pale-dogwood": "#FFDDD2",
+    "charcoal": "#2E5266",
+}
+
 
 # Specify the database path
 DATABASE_PATH = "data/listings.sqlite"

@@ -822,6 +822,16 @@ files = [
 ]
 
 [[package]]
+name = "millify"
+version = "0.1.1"
+description = "Convert long numbers into a human-readable format in Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "millify-0.1.1.tar.gz", hash = "sha256:619defdc98b6d23f941b5ce4aaf4bf87a0e0f64cd0446ffa299be94486597f1a"},
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.5.8"
 description = "Patch asyncio to allow nested event loops"
@@ -2244,4 +2254,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "7255fce6852b6b62a5266921750017d4ecff33c9de6202a303f73cdd5a3f002b"
+content-hash = "b157a0b1e071ae8470bbd4b4ba07cebcf3822834d4c58b3f17faec35198c20ff"
