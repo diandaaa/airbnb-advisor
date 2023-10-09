@@ -1,8 +1,8 @@
 ### ➡️ View the live app [here](https://airbnb-advisor.streamlit.app)!
 
-# Welcome to my **Airbnb Advisor** project
+# Airbnb Advisor
 
-This app explores a huge set of Airbnb listings and aims to provide actionable insights for hosts. Whether you're new to hosting or a seasoned veteran, explore select cities and find ways to maximize your profitability, ratings, and visibility.
+Welcome to my **Airbnb Advisor** project. This app explores a huge set of Airbnb listings and aims to provide actionable insights for hosts. Whether you're new to hosting or a seasoned veteran, explore select cities and find ways to maximize your profitability, ratings, and visibility.
 
 ### 📘 Pages at a Glance
 
