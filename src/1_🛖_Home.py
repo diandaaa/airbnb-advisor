@@ -1,5 +1,4 @@
 import streamlit as st
-import plotly.graph_objects as go
 import pandas as pd
 from constants import AIRBNB_COLORS as COLORS
 from sqlalchemy import func, literal, union_all
@@ -121,4 +120,4 @@ with chart_col1:
     st.bar_chart(pivot_room_type_counts[st.session_state.selected_city])
 
 with chart_col2:
-    st.bar_chart(room_type_counts[room_type_counts["City"] == selected_city])
+    st.text("To do...")
