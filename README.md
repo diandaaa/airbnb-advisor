@@ -1,4 +1,4 @@
-[View the live app here](https://airbnb-advisor.streamlit.app)
+### ➡️ View the live app [here](https://airbnb-advisor.streamlit.app)!
 
 # Welcome to my **Airbnb Advisor** project
 
