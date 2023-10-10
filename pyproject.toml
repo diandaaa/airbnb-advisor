@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "airbnb-dash"
+name = "airbnb-advisor"
 version = "0.1.0"
 description = "Dashboard for interacting with Airbnb dataset from Inside Airbnb project."
 authors = ["Ben H. <41309048+benharmandev@users.noreply.github.com>"]
@@ -15,6 +15,9 @@ streamlit = "^1.26.0"
 sqlalchemy = "^2.0.20"
 plotly = "^5.17.0"
 millify = "^0.1.1"
+spacy = "^3.7.1"
+fuzzywuzzy = "^0.18.0"
+python-levenshtein = "^0.22.0"
 
 
 [tool.poetry.group.dev.dependencies]

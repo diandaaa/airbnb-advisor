@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, REAL
+from sqlalchemy import REAL, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import registry
 
 mapper_registry = registry()
@@ -65,12 +65,14 @@ class Amenities(CustomBase):
     __tablename__ = "Amenities"
     _table_type = "heirarchical_lookup"
     _description = (
-        "Heirarchical lookup table for listing amenities; child to AmenityTypes"
+        "Heirarchical lookup table for listing amenities; child to AmenityCategories"
     )
 
     amenity_id = Column(Integer, primary_key=True, autoincrement=True)
-    amenity_name = Column(String, unique=True)
-    amenity_type_id = Column(Integer, ForeignKey("AmenityTypes.amenity_category_id"))
+    amenity = Column(String, unique=True)
+    amenity_category_id = Column(
+        Integer, ForeignKey("AmenityCategories.amenity_category_id")
+    )
 
 
 # Heirarchical Lookup Tables (Level 2) -----------------------------------------------------------------------------
@@ -82,11 +84,11 @@ class Cities(CustomBase):
     )
 
     city_id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, unique=True)
+    city = Column(String, unique=True)
 
 
-class AmenityTypes(CustomBase):
-    __tablename__ = "AmenityTypes"
+class AmenityCategories(CustomBase):
+    __tablename__ = "AmenityCategories"
     _table_type = "heirarchical_lookup"
     _description = (
         "Heirarchical lookup table for listing amenity types; parent to Amenities"
@@ -137,18 +139,18 @@ class ListingsCore(CustomBase):
 
 
 # Listings Extension Tables ---------------------------------------------------------------------------------------
-class ListingsAvailability(CustomBase):
-    __tablename__ = "ListingsAvailability"
-    _table_type = "extension"
-    _description = "Extension table for listing availability"
+# class ListingsAvailability(CustomBase):
+#     __tablename__ = "ListingsAvailability"
+#     _table_type = "extension"
+#     _description = "Extension table for listing availability"
 
-    listing_id = Column(
-        Integer, ForeignKey("ListingsCore.listing_id"), primary_key=True
-    )
-    availability_30 = Column(Integer)
-    availability_60 = Column(Integer)
-    availability_90 = Column(Integer)
-    availability_365 = Column(Integer)
+#     listing_id = Column(
+#         Integer, ForeignKey("ListingsCore.listing_id"), primary_key=True
+#     )
+#     availability_30 = Column(Integer)
+#     availability_60 = Column(Integer)
+#     availability_90 = Column(Integer)
+#     availability_365 = Column(Integer)
 
 
 class ListingsLocation(CustomBase):
@@ -160,8 +162,8 @@ class ListingsLocation(CustomBase):
         Integer, ForeignKey("ListingsCore.listing_id"), primary_key=True
     )
     neighborhood_id = Column(Integer, ForeignKey("Neighborhoods.neighborhood_id"))
-    latitude = Column(REAL)
-    longitude = Column(REAL)
+    # latitude = Column(REAL)
+    # longitude = Column(REAL)
 
 
 class ListingsReviewsSummary(CustomBase):
@@ -192,6 +194,9 @@ class ListingsAmenities(CustomBase):
     _table_type = "junction"
     _description = "Junction table for listing amenities"
 
+    # While it seems unnecessary to have a primary key for a junction table, SQLAlchemy requires it and using a
+    # composite key here nearly doubles the database size
     listing_amenity_id = Column(Integer, primary_key=True, autoincrement=True)
+
     listing_id = Column(Integer, ForeignKey("ListingsCore.listing_id"))
     amenity_id = Column(Integer, ForeignKey("Amenities.amenity_id"))

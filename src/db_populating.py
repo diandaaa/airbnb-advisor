@@ -1,8 +1,10 @@
+import pandas as pd
+from sqlalchemy import inspect
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from sqlalchemy import inspect
+
+from constants import AMENITY_CATEGORIES
 from database import models
-import pandas as pd
 
 
 def populate_initial_tables(session: Session, df: pd.DataFrame):
@@ -16,9 +18,9 @@ def populate_initial_tables(session: Session, df: pd.DataFrame):
             neighborhood_name = record[neighborhood_col]
 
             # Try to find the city first, if not exist then create a new one
-            city = session.query(models.Cities).filter_by(name=city_name).first()
+            city = session.query(models.Cities).filter_by(city=city_name).first()
             if city is None:
-                city = models.Cities(name=city_name)
+                city = models.Cities(city=city_name)
                 session.add(city)
                 session.flush()  # to get the new city_id
 
@@ -49,6 +51,7 @@ def populate_initial_tables(session: Session, df: pd.DataFrame):
 
     def populate_hosts(session: Session, df: pd.DataFrame):
         # Create an auxiliary column representing the number of filled (non-NaN) values
+        df = df.copy()
         df["filled_count"] = df.notna().sum(axis=1)
 
         # Sort the DataFrame based on the auxiliary column
@@ -210,8 +213,8 @@ def populate_listings_location(session, df):
         location = models.ListingsLocation(
             listing_id=row["listing_id"],
             neighborhood_id=get_neighborhood_id(session, row["neighborhood"]),
-            latitude=row["latitude"],
-            longitude=row["longitude"],
+            # latitude=row["latitude"],  # not used in the app (makes DB too large for GitHub)
+            # longitude=row["longitude"],  # not used in the app (makes DB too large for GitHub)
         )
         session.add(location)
 
@@ -238,55 +241,36 @@ def populate_listings_reviews_summary(session, df):
 
 def populate_listings_tables(session, df):
     populate_listings_core(session, df)
-    populate_listings_availability(session, df)
+    # populate_listings_availability(session, df) # not used in the app (makes DB too large for GitHub)
     populate_listings_location(session, df)
     populate_listings_reviews_summary(session, df)
 
     session.commit()
 
 
-def populate_amenities_and_link(session, df):
-    # Step 1: Bulk Extraction of Unique Amenities
-    unique_amenities = set()
-    for amenities_str in df["amenities"]:
-        amenities_list = [
-            amenity.strip(' " ') for amenity in amenities_str[1:-1].split(",")
-        ]
-        unique_amenities.update(amenities_list)
+def populate_amenity_tables(session: Session):
+    """Populate Amenities and AmenityCategories tables with predefined data."""
+    for category, amenities_list in AMENITY_CATEGORIES.items():
+        # Create or find the category in the AmenityCategories table
+        amenity_category = (
+            session.query(models.AmenityCategories)
+            .filter_by(amenity_category=category)
+            .first()
+        )
+        if not amenity_category:
+            amenity_category = models.AmenityCategories(amenity_category=category)
+            session.add(amenity_category)
+            session.commit()
 
-    # Fetch existing amenities in the database
-    existing_amenities = {
-        amenity.amenity_name
-        for amenity in session.query(models.Amenities.amenity_name).all()
-    }
-
-    # Find amenities that are not yet in the database
-    new_amenities = unique_amenities - existing_amenities
-
-    # Step 2: Bulk Insertion of New Amenities
-    session.bulk_insert_mappings(
-        models.Amenities, [{"amenity_name": amenity} for amenity in new_amenities]
-    )
-    session.commit()
-
-    # Fetch all amenities with their IDs after insertion
-    all_amenities = session.query(models.Amenities).all()
-    amenity_id_map = {
-        amenity.amenity_name: amenity.amenity_id for amenity in all_amenities
-    }
-
-    # Step 3: Populate ListingsAmenities Table
-    listing_amenity_pairs = []
-    for _, row in df.iterrows():
-        listing_id = row["listing_id"]
-        amenities_list = [
-            amenity.strip(' " ') for amenity in row["amenities"][1:-1].split(",")
-        ]
-        for amenity in amenities_list:
-            amenity_id = amenity_id_map[amenity]
-            listing_amenity_pairs.append(
-                {"listing_id": listing_id, "amenity_id": amenity_id}
+        # Create the amenities associated with this category
+        for amenity_name in amenities_list:
+            existing_amenity = (
+                session.query(models.Amenities).filter_by(amenity=amenity_name).first()
             )
-
-    session.bulk_insert_mappings(models.ListingsAmenities, listing_amenity_pairs)
-    session.commit()
+            if not existing_amenity:
+                new_amenity = models.Amenities(
+                    amenity=amenity_name,
+                    amenity_category_id=amenity_category.amenity_category_id,
+                )
+                session.add(new_amenity)
+        session.commit()

@@ -96,167 +96,6 @@ listings_city_counts_chart = (
     )
 )
 
-# Generate room type counts by city chart --------------------------------------
-# Define the room type counts SQL query
-room_type_city_counts = pd.DataFrame(
-    (
-        conn.session.query(
-            Cities.name.label("City"),
-            RoomTypes.room_type.label("Room Type"),
-            func.count(ListingsCore.listing_id).label("Count"),
-        )
-        .join(RoomTypes, RoomTypes.room_type_id == ListingsCore.room_type_id)
-        .join(ListingsLocation, ListingsLocation.listing_id == ListingsCore.listing_id)
-        .join(
-            Neighborhoods,
-            Neighborhoods.neighborhood_id == ListingsLocation.neighborhood_id,
-        )
-        .join(Cities, Cities.city_id == Neighborhoods.city_id)
-        .group_by(Cities.name, RoomTypes.room_type)
-    ).all()
-)
-
-# Add an "All Cities" city which sums room type totals across cities
-room_type_counts = pd.concat(
-    [
-        room_type_city_counts.groupby("Room Type")
-        .agg({"Count": "sum"})
-        .assign(City="All Cities")
-        .reset_index(),
-        room_type_city_counts,
-    ],
-    ignore_index=True,
-)
-
-# Pivot the room_type_counts DataFrame
-pivot_room_type_counts = room_type_counts.pivot(
-    index="Room Type", columns="City", values="Count"
-)
-
-# Fill NaN values with 0
-pivot_room_type_counts.fillna(0, inplace=True)
-
-# Get the room type counts filtered for the selected city
-selected_city_room_type_counts = pivot_room_type_counts[
-    st.session_state.selected_city
-].reset_index()
-selected_city_room_type_counts.columns = ["Room Type", "Count"]
-
-# Set the chart title
-title_text = f"Room Type Counts for {st.session_state.selected_city}"
-
-# Create chart
-room_type_counts_chart = (
-    alt.Chart(
-        selected_city_room_type_counts,
-        title=title_text,
-    )
-    .mark_bar(
-        opacity=0.7,
-        color=COLORS["nature-green"],
-    )
-    .encode(
-        x=alt.X("Count:Q", sort="-x", axis=alt.Axis(title=None)),
-        y=alt.Y("Room Type:O", sort="-x", axis=alt.Axis(title=None)),
-    )
-)
-
-
-# Generate active listings chart ------------------------------------------------
-# Define the active listings SQL query
-first_review_date_counts = pd.DataFrame(
-    conn.session.query(
-        Cities.name.label("City"),
-        ListingsReviewsSummary.first_review.label("First Review Date"),
-        func.count(ListingsReviewsSummary.listing_id).label("Count"),
-    )
-    .join(
-        ListingsLocation,
-        ListingsLocation.listing_id == ListingsReviewsSummary.listing_id,
-    )
-    .join(
-        Neighborhoods,
-        Neighborhoods.neighborhood_id == ListingsLocation.neighborhood_id,
-    )
-    .join(Cities, Cities.city_id == Neighborhoods.city_id)
-    .filter(ListingsReviewsSummary.first_review.isnot(None))
-    .group_by(ListingsReviewsSummary.first_review, Cities.name)
-    .all()
-)
-
-# Convert 'First Review Date' to datetime and extract quarters
-first_review_date_counts["First Review Date"] = pd.to_datetime(
-    first_review_date_counts["First Review Date"]
-)
-first_review_date_counts["Quarter"] = first_review_date_counts[
-    "First Review Date"
-].dt.to_period("Q")
-
-# Filter for city based on st.session_state.selected_city
-if st.session_state.selected_city != "All Cities":
-    first_review_date_counts = first_review_date_counts[
-        first_review_date_counts["City"] == st.session_state.selected_city
-    ]
-
-# Group by quarter after filtering for the city and get counts
-review_date_counts_grouped = (
-    first_review_date_counts.groupby("Quarter").agg({"Count": "sum"}).reset_index()
-)
-review_date_counts_grouped["Quarter"] = review_date_counts_grouped[
-    "Quarter"
-].dt.to_timestamp()  # Convert back to timestamp for plotting
-
-# Compute the cumulative sum for the 'Count' column
-review_date_counts_grouped["Cumulative Count"] = review_date_counts_grouped[
-    "Count"
-].cumsum()
-
-# Extend the dataframe for cumulative counts
-cumulative_df = review_date_counts_grouped.copy()
-cumulative_df["Value"] = cumulative_df["Count"].cumsum()  # Compute cumulative sum
-cumulative_df["Type"] = "Cumulative Listings"
-
-# Adjust the original dataframe for new listings
-review_date_counts_grouped["Type"] = "New Listings"
-review_date_counts_grouped.rename(columns={"Count": "Value"}, inplace=True)
-
-# Combine the dataframes so that "Cumulative Listings" are first, ensuring they are plotted beneath "New Listings"
-combined_df = pd.concat([cumulative_df, review_date_counts_grouped], ignore_index=True)
-
-# Modify the subtitle of the chart properties
-subtitle_text = (
-    f"Filtered for Listings Active in Q1 2023 ({st.session_state.selected_city})"
-)
-
-# Altair chart with encoded color for the legend
-active_listings_chart = (
-    alt.Chart(combined_df)
-    .mark_area(opacity=0.7)
-    .encode(
-        x=alt.X("Quarter:T", title=None),
-        y=alt.Y("Value:Q", title=None, stack=None),
-        color=alt.Color(
-            "Type:N",
-            scale=alt.Scale(
-                domain=["New Listings", "Cumulative Listings"],
-                range=[COLORS["nature-green"], COLORS["tiffany-blue"]],
-            ),
-            legend=alt.Legend(title=None, orient="top"),
-        ),
-        tooltip=["Quarter:T", "Value:Q"],
-    )
-    .properties(
-        title={
-            "text": "Listings by Quarter of First Review",
-            "subtitle": subtitle_text,
-        }
-    )
-    .configure_axis(
-        domain=False,  # This removes the border around the chart
-        ticks=False,  # This removes the ticks from the axes
-    )
-)
-
 
 # Generate page content --------------------------------------------------------
 st.title("Airbnb Advisor")
@@ -286,20 +125,13 @@ with text_col:
 with chart_col:
     st.markdown("### 🗃️ Dataset Overview")
 
-    metric1, metric2, metric3, metric4 = st.columns(4)
-    metric1.metric("Listings", millify(listings_count))
-    metric2.metric("Cities", millify(cities_count))
-    metric3.metric("Neighborhoods", millify(neighborhoods_count))
-    metric4.metric("Amenities", millify(amenities_count))
+    metric1, metric2, metric3 = st.columns(3)
+    metric1.metric("Unique Areas", cities_count)
+    metric2.metric("Neighborhoods", neighborhoods_count)
+    metric3.metric("Listings", millify(listings_count))
 
     st.markdown(
-        "First review was on **May 3, 2009** and data was last updated on **March 28, 2023**."
+        "First review was on **May 3, 2009** and data was last updated on **March 28, 2023**. Listings with no reviews in Q1 2023 were deemed inactive and removed. Host and listing IDs were anonymized and listing geocoordinates removed for privacy."
     )
 
-    st.text("")
-
     st.altair_chart(listings_city_counts_chart, use_container_width=True)
-
-    st.altair_chart(room_type_counts_chart, use_container_width=True)
-
-    st.altair_chart(active_listings_chart, use_container_width=True)
