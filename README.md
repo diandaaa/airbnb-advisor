@@ -25,7 +25,6 @@ This app is an independent project and serves as an exploratory tool. While it a
 2. Download the Inside Airbnb dataset from Kaggle [here](https://www.kaggle.com/datasets/konradb/inside-airbnb-usa).
 3. Extract the `usa` folder from the downloaded dataset and place it into the project data folder in the format: `data/usa/...`
 4. Initialize the project with `poetry`.
-5. Install the spaCy pre-trained embedding model for natural language processing using `python -m spacy download en_core_web_md`.
-6. Run `setup.py` to initialize and populate the SQLite database. (Note: This takes several minutes as this is a near 100MB write operation to the database.)
+6. Run `setup.py` to initialize and populate the SQLite database. (Note: This takes several minutes as this is a 78.5MB write operation to the database.)
 7. In your terminal, type `poetry shell` to enter the virtual environment.
 8. Finally, run the command `streamlit run src/1_🛖_Home.py` to launch the app in your web browser where it will start at the project home page.
