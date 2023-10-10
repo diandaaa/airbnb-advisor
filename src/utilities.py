@@ -1,4 +1,24 @@
 import base64
+from typing import List
+
+from database.models import Cities
+
+
+def load_city_names(conn) -> List[str]:
+    """
+    Loads unique city names from the Cities table in the database.
+
+    Args:
+    - conn: The database connection object.
+
+    Returns:
+    - A list of city names.
+    """
+    # Get unique cities from the Cities table
+    cities_from_db = conn.session.query(Cities.city).distinct().all()
+
+    # Return the list of cities with "All Cities" prepended
+    return ["All Cities"] + [city[0] for city in cities_from_db]
 
 
 def get_image_with_encoding(image_path):

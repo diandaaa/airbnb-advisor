@@ -1,23 +1,25 @@
-import altair as alt
-import streamlit as st
-import pandas as pd
-from constants import BENS_COLORS as COLORS
-from millify import millify
-from sqlalchemy import func, extract, text
 from datetime import datetime
-from database.models import (
-    ListingsCore,
-    RoomTypes,
-    ListingsLocation,
-    Neighborhoods,
-    Cities,
-    Amenities,
-    ListingsReviewsSummary,
-    Hosts,
-)
-from constants import CITIES
-import utilities
 
+import altair as alt
+import pandas as pd
+import streamlit as st
+from millify import millify
+from sqlalchemy import extract, func, text
+
+import utilities
+from constants import BENS_COLORS as COLORS
+from constants import CITIES
+from database.models import (
+    Amenities,
+    Cities,
+    Hosts,
+    ListingsCore,
+    ListingsLocation,
+    ListingsReviewsSummary,
+    Neighborhoods,
+    RoomTypes,
+)
+from metrics.overview_metrics import get_overview_metrics
 
 # Configure the page -----------------------------------------------------------
 st.set_page_config(
@@ -29,17 +31,7 @@ st.set_page_config(
 )
 
 
-cities = CITIES
-if "All Cities" not in cities:
-    cities.insert(0, "All Cities")
-
-
 # Configure the sidebar --------------------------------------------------------
-# Add session state variable for city selection
-st.session_state.selected_city = st.sidebar.selectbox(
-    "Which city will we explore?", cities
-)
-
 st.sidebar.text("")
 st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
@@ -58,126 +50,16 @@ conn = st.experimental_connection(
     url="sqlite:///data/listings.sqlite",  # SQLite connection URL
 )
 
+# Populate city name list if not already populated
+if "city_names" not in st.session_state:
+    st.session_state.city_names = utilities.load_city_names(conn)
 
-# Generate overview metrics -----------------------------------------------------
-# Get the two most recent quarters
-quarters = (
-    conn.session.query(
-        extract("year", ListingsReviewsSummary.first_review).label("year"),
-        extract("quarter", ListingsReviewsSummary.first_review).label("quarter"),
-    )
-    .distinct()
-    .order_by(text("year desc"), text("quarter desc"))
-    .limit(2)
-    .all()
-)
-
-current_qtr = quarters[0]
-
-# Calculate metrics for the current and the last quarter
-
-# Total Listings
-listings_current_qtr = (
-    conn.session.query(func.count(ListingsCore.listing_id))
-    .join(
-        ListingsReviewsSummary,
-        ListingsCore.listing_id == ListingsReviewsSummary.listing_id,
-    )
-    .filter(
-        extract("year", ListingsReviewsSummary.first_review) == current_qtr.year,
-        extract("quarter", ListingsReviewsSummary.first_review) == current_qtr.quarter,
-    )
-    .scalar()
-)
-
-all_time_listings = conn.session.query(func.count(ListingsCore.listing_id)).scalar()
-
-hosts_current_qtr = (
-    conn.session.query(func.count(Hosts.host_id))
-    .filter(
-        extract("year", Hosts.host_since) == current_qtr.year,
-        extract("quarter", Hosts.host_since) == current_qtr.quarter,
-    )
-    .scalar()
-)
-
-all_time_hosts = conn.session.query(func.count(Hosts.host_id)).scalar()
-
-review_scores_qtr = (
-    conn.session.query(ListingsReviewsSummary.review_scores_rating)
-    .join(
-        ListingsCore,
-        ListingsCore.listing_id == ListingsReviewsSummary.listing_id,
-    )
-    .filter(
-        extract("year", ListingsReviewsSummary.first_review) == current_qtr.year,
-        extract("quarter", ListingsReviewsSummary.first_review) == current_qtr.quarter,
-    )
-    .order_by(ListingsReviewsSummary.review_scores_rating)
-    .all()
-)
-
-median_review_score_current_qtr = (
-    review_scores_qtr[len(review_scores_qtr) // 2].review_scores_rating
-    if len(review_scores_qtr) % 2 == 1
-    else (
-        review_scores_qtr[len(review_scores_qtr) // 2 - 1].review_scores_rating
-        + review_scores_qtr[len(review_scores_qtr) // 2].review_scores_rating
-    )
-    / 2
-)
-
-all_review_scores = (
-    conn.session.query(ListingsReviewsSummary.review_scores_rating)
-    .order_by(ListingsReviewsSummary.review_scores_rating)
-    .all()
-)
-
-all_time_median_review_score = (
-    all_review_scores[len(all_review_scores) // 2].review_scores_rating
-    if len(all_review_scores) % 2 == 1
-    else (
-        all_review_scores[len(all_review_scores) // 2 - 1].review_scores_rating
-        + all_review_scores[len(all_review_scores) // 2].review_scores_rating
-    )
-    / 2
-)
-
-prices_qtr = (
-    conn.session.query(ListingsCore.price)
-    .join(
-        ListingsReviewsSummary,
-        ListingsCore.listing_id == ListingsReviewsSummary.listing_id,
-    )  # replace 'some_id' with the actual join condition
-    .filter(
-        extract("year", ListingsReviewsSummary.first_review) == current_qtr.year,
-        extract("quarter", ListingsReviewsSummary.first_review) == current_qtr.quarter,
-    )
-    .order_by(ListingsCore.price)
-    .all()
-)
+st.title(f"📈 Charts & Metrics")
 
 
-median_price_current_qtr = (
-    prices_qtr[len(prices_qtr) // 2].price
-    if len(prices_qtr) % 2 == 1
-    else (
-        prices_qtr[len(prices_qtr) // 2 - 1].price
-        + prices_qtr[len(prices_qtr) // 2].price
-    )
-    / 2
-)
-
-all_prices = conn.session.query(ListingsCore.price).order_by(ListingsCore.price).all()
-
-all_time_median_price = (
-    all_prices[len(all_prices) // 2].price
-    if len(all_prices) % 2 == 1
-    else (
-        all_prices[len(all_prices) // 2 - 1].price
-        + all_prices[len(all_prices) // 2].price
-    )
-    / 2
+# Add session state variable for city selection
+st.session_state.selected_city = st.selectbox(
+    "Which city would you like to explore?", st.session_state.city_names
 )
 
 
@@ -185,7 +67,7 @@ all_time_median_price = (
 # Define the active listings SQL query
 first_review_date_counts = pd.DataFrame(
     conn.session.query(
-        Cities.name.label("City"),
+        Cities.city.label("City"),
         ListingsReviewsSummary.first_review.label("First Review Date"),
         func.count(ListingsReviewsSummary.listing_id).label("Count"),
     )
@@ -199,7 +81,7 @@ first_review_date_counts = pd.DataFrame(
     )
     .join(Cities, Cities.city_id == Neighborhoods.city_id)
     .filter(ListingsReviewsSummary.first_review.isnot(None))
-    .group_by(ListingsReviewsSummary.first_review, Cities.name)
+    .group_by(ListingsReviewsSummary.first_review, Cities.city)
     .all()
 )
 
@@ -274,7 +156,7 @@ active_listings_chart = (
 room_type_city_counts = pd.DataFrame(
     (
         conn.session.query(
-            Cities.name.label("City"),
+            Cities.city.label("City"),
             RoomTypes.room_type.label("Room Type"),
             func.count(ListingsCore.listing_id).label("Count"),
         )
@@ -285,7 +167,7 @@ room_type_city_counts = pd.DataFrame(
             Neighborhoods.neighborhood_id == ListingsLocation.neighborhood_id,
         )
         .join(Cities, Cities.city_id == Neighborhoods.city_id)
-        .group_by(Cities.name, RoomTypes.room_type)
+        .group_by(Cities.city, RoomTypes.room_type)
     ).all()
 )
 
@@ -351,45 +233,38 @@ average_price_non_superhost = (
 
 superhost_premium = average_price_superhost - average_price_non_superhost
 
-
-st.title(f"📈 Charts & Metrics | {st.session_state.selected_city}")
-
-st.markdown(
-    "Note: The dataset is prefiltered for listings active in Q1 2023. Metrics deltas only reflect changes based on listings that were active both in the past and in Q1 2023."
-)
+metrics = get_overview_metrics(conn, st.session_state.selected_city)
 
 overview_tab, pricing_tab, reviews_tab = st.tabs(["Overview", "Pricing", "Reviews"])
 
 with overview_tab:
     col1, col2, col3, col4 = st.columns(4)
 
+    st.markdown("Note: Metrics are for Q1 2023 & are compared to Q1 2022.")
+
     col1.metric(
-        "Total Listings",
-        millify(all_time_listings),
-        delta=f"{millify(listings_current_qtr)} New Listings",
-        delta_color="off",
+        "Active Listings",
+        millify(metrics["active_listings"]),
+        delta=f"{millify(metrics['active_listings_delta'])}",
     )
     col2.metric(
-        "Total Hosts",
-        millify(all_time_hosts),
-        delta=f"{millify(hosts_current_qtr)} New Hosts",
-        delta_color="off",
+        "Active Hosts",
+        millify(metrics["active_hosts"]),
+        delta=f"{millify(metrics['active_hosts_delta'])}",
     )
     col3.metric(
         "Median Review Score",
-        f"{all_time_median_review_score}/5",
-        delta=round(median_review_score_current_qtr - all_time_median_review_score, 2),
+        f"{metrics['median_review_score']}/5",
+        delta=round(metrics["median_review_score_delta"], 2),
     )
 
-    price_delta = median_price_current_qtr - all_time_median_price
-
     # Determine the prefix based on the sign of the delta
-    prefix = "-" if price_delta < 0 else ""
+    prefix = "-" if metrics["median_price"] < 0 else ""
 
     col4.metric(
         "Median Nightly Price",
-        f"${millify(all_time_median_price)}",
-        delta=f"{prefix}${millify(abs(price_delta))}",
+        f"${millify(metrics['median_price'])}",
+        delta=f"{prefix}${millify(abs(metrics['median_price_delta']))}",
     )
 
     st.altair_chart(active_listings_chart, use_container_width=True)

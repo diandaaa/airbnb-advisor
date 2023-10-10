@@ -59,13 +59,13 @@ def populate_initial_tables(session: Session, df: pd.DataFrame):
             columns="filled_count"
         )
 
-        # Drop duplicate host IDs, keeping the first occurrence (which has the most filled columns after sorting)
-        unique_hosts = sorted_df.drop_duplicates(subset="host_id")
+        # We can now drop duplicate host IDs from the DataFrame
+        sorted_df = sorted_df.drop_duplicates(subset="host_id")
 
         # Keep track of host response times we've processed
         processed_response_times = set()
 
-        for _, record in unique_hosts.iterrows():
+        for _, record in sorted_df.iterrows():
             response_time = record.get("host_response_time", None)
             if response_time:
                 host_response_time_obj = (
@@ -80,19 +80,25 @@ def populate_initial_tables(session: Session, df: pd.DataFrame):
             else:
                 host_response_time_id = None
 
-            host = models.Hosts(
-                host_id=record["host_id"],
-                host_since=record.get("host_since", None),
-                host_response_time_id=host_response_time_id,
-                host_response_rate=record.get("host_response_rate", None),
-                host_acceptance_rate=record.get("host_acceptance_rate", None),
-                host_is_superhost=record.get("host_is_superhost", None),
-                host_listings_count=record.get("host_listings_count", None),
-                host_total_listings_count=record.get("host_total_listings_count", None),
-                host_has_profile_pic=record.get("host_has_profile_pic", None),
-                host_identity_verified=record.get("host_identity_verified", None),
+            existing_host = (
+                session.query(models.Hosts).filter_by(host_id=record["host_id"]).first()
             )
-            session.add(host)
+            if not existing_host:
+                host = models.Hosts(
+                    host_id=record["host_id"],  # Adding back host_id assignment
+                    host_since=record.get("host_since", None),
+                    host_response_time_id=host_response_time_id,
+                    host_response_rate=record.get("host_response_rate", None),
+                    host_acceptance_rate=record.get("host_acceptance_rate", None),
+                    host_is_superhost=record.get("host_is_superhost", None),
+                    host_listings_count=record.get("host_listings_count", None),
+                    host_total_listings_count=record.get(
+                        "host_total_listings_count", None
+                    ),
+                    host_has_profile_pic=record.get("host_has_profile_pic", None),
+                    host_identity_verified=record.get("host_identity_verified", None),
+                )
+                session.add(host)
 
         session.commit()
 
@@ -191,7 +197,7 @@ def populate_listings_core(session, df):
             maximum_nights=row["maximum_nights"],
             has_availability=row["has_availability"],
             instant_bookable=row["instant_bookable"],
-            license=row["license"],
+            # license=row["license"],
         )
         session.add(listing)
 

@@ -18,6 +18,8 @@ millify = "^0.1.1"
 spacy = "^3.7.1"
 fuzzywuzzy = "^0.18.0"
 python-levenshtein = "^0.22.0"
+langchain = "^0.0.311"
+openai = "^0.28.1"
 
 
 [tool.poetry.group.dev.dependencies]

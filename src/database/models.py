@@ -135,7 +135,7 @@ class ListingsCore(CustomBase):
     maximum_nights = Column(Integer)
     has_availability = Column(Integer)
     instant_bookable = Column(Integer)
-    license = Column(String)
+    # license = Column(String)
 
 
 # Listings Extension Tables ---------------------------------------------------------------------------------------

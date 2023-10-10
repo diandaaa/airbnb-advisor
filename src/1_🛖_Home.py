@@ -1,21 +1,21 @@
 import altair as alt
-import streamlit as st
 import pandas as pd
-from constants import BENS_COLORS as COLORS
+import streamlit as st
 from millify import millify
 from sqlalchemy import func
-from database.models import (
-    ListingsCore,
-    RoomTypes,
-    ListingsLocation,
-    Neighborhoods,
-    Cities,
-    Amenities,
-    ListingsReviewsSummary,
-)
-from constants import CITIES
-import utilities
 
+import utilities
+from constants import BENS_COLORS as COLORS
+from constants import CITIES
+from database.models import (
+    Amenities,
+    Cities,
+    ListingsCore,
+    ListingsLocation,
+    ListingsReviewsSummary,
+    Neighborhoods,
+    RoomTypes,
+)
 
 # Configure the page -----------------------------------------------------------
 st.set_page_config(
@@ -27,17 +27,7 @@ st.set_page_config(
 )
 
 
-cities = CITIES
-if "All Cities" not in cities:
-    cities.insert(0, "All Cities")
-
-
 # Configure the sidebar --------------------------------------------------------
-# Add session state variable for city selection
-st.session_state.selected_city = st.sidebar.selectbox(
-    "Which city will we explore?", cities
-)
-
 st.sidebar.text("")
 st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
@@ -56,6 +46,10 @@ conn = st.experimental_connection(
     url="sqlite:///data/listings.sqlite",  # SQLite connection URL
 )
 
+# Populate city name list if not already populated
+if "city_names" not in st.session_state:
+    st.session_state.city_names = utilities.load_city_names(conn)
+
 
 # Generate metrics--------------------------------------------------------------
 listings_count = conn.session.query(func.count(ListingsCore.listing_id)).scalar()
@@ -71,7 +65,7 @@ neighborhoods_count = conn.session.query(
 listings_city_counts = pd.DataFrame(
     (
         conn.session.query(
-            Cities.name.label("City"),
+            Cities.city.label("City"),
             func.count(ListingsCore.listing_id).label("Count"),
         )
         .join(ListingsLocation, ListingsLocation.listing_id == ListingsCore.listing_id)
@@ -80,7 +74,7 @@ listings_city_counts = pd.DataFrame(
             Neighborhoods.neighborhood_id == ListingsLocation.neighborhood_id,
         )
         .join(Cities, Cities.city_id == Neighborhoods.city_id)
-        .group_by(Cities.name)
+        .group_by(Cities.city)
     ).all()
 )
 
@@ -131,7 +125,7 @@ with chart_col:
     metric3.metric("Listings", millify(listings_count))
 
     st.markdown(
-        "First review was on **May 3, 2009** and data was last updated on **March 28, 2023**. Listings with no reviews in Q1 2023 were deemed inactive and removed. Host and listing IDs were anonymized and listing geocoordinates removed for privacy."
+        "First review was on **May 3, 2009** and data was last updated on **March 28, 2023**. Listings with no reviews in or after 2022 were deemed inactive and removed. Because I am primarily interested in studying short term rentals (STRs), listings with 7+ nights required for a booking were also filtered out. Host and listing IDs were anonymized and listing geocoordinates removed for privacy."
     )
 
     st.altair_chart(listings_city_counts_chart, use_container_width=True)

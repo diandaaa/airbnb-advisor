@@ -5,7 +5,6 @@ import data_cleaning
 import data_reading
 import db_populating
 from amenity_processing import process_amenities
-from database import models
 from database.db_session import SessionLocal, init_db
 
 
@@ -44,32 +43,30 @@ def clean_listings_df(listings_df):
     ].round(2)
 
     # Remove listings with no reviews in 2023 (the scrape year) or later
-    listings_df = listings_df[listings_df["last_review"].str[:4] >= "2023"].copy()
+    listings_df = listings_df[listings_df["last_review"].str[:4] >= "2022"].copy()
+
+    # Filter out listings with minimum_nights of 7 or greater
+    listings_df = listings_df[listings_df["minimum_nights"] < 7].copy()
 
     # Restart ordering of listing_id and host_id at 1 to anonymize the data
     listings_df["listing_id"] = (
         listings_df["listing_id"].rank(method="first").astype(int)
     )
-    listings_df["host_id"] = listings_df["host_id"].rank(method="first").astype(int)
+
+    # Create a mapping from old host_id to new integer ID starting from 1
+    unique_host_ids = listings_df["host_id"].unique()
+    host_id_mapping = {
+        old_id: new_id for new_id, old_id in enumerate(unique_host_ids, start=1)
+    }
+
+    # Replace old host_id values with new mapped values
+    listings_df["host_id"] = listings_df["host_id"].map(host_id_mapping)
 
     return listings_df
 
 
 def list_subfolders(path):
     return [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
-
-def update_cities_from_db(session):
-    if not constants.CITIES:
-        # Get unique cities from the Cities table
-        cities_from_db = session.query(models.Cities.city).distinct().all()
-        city_list = [city[0] for city in cities_from_db]
-
-        # Add 'All Cities' to the beginning
-        city_list.insert(0, "All Cities")
-
-        # Update the CITIES constant
-        constants.CITIES.extend(city_list)
 
 
 def main():
@@ -99,9 +96,6 @@ def main():
 
     # Map amenities to listings through the ListingsAmenities table
     process_amenities(session, listings_df_clean)
-
-    # Update CITIES from the database
-    update_cities_from_db(session)
 
     # Commit and Close Session
     session.commit()
