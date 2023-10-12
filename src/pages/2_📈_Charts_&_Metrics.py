@@ -369,7 +369,9 @@ with pricing_tab:
         delta=f"{prefix_superhost}${millify(abs(median_superhost_price_delta_value))}",
     )
 
-    # overview_charts.median_price_bar_chart(conn.session, st.session_state.selected_city)
+    overview_charts.chart_price_dist_by_room_type(
+        conn.session, st.session_state.selected_city
+    )
 
 
 with reviews_tab:

@@ -1,52 +1,43 @@
-import streamlit as st
-from sqlalchemy import create_engine, func, select
-from sqlalchemy.orm import sessionmaker
+import altair as alt
+from sqlalchemy.orm import joinedload
 
-from database import models
+from database.models import (
+    Cities,
+    ListingsCore,
+    ListingsLocation,
+    Neighborhoods,
+    RoomTypes,
+)
 
 
-def median_price_bar_chart(session, city):
-    """
-    Generate a bar chart displaying the median price across four room types.
-    Filters by city if a specific city is selected.
-
-    Parameters:
-    session (Session): SQLAlchemy session object
-    city (str): Selected city to filter by; 'All Cities' for no city filter
-    """
-
-    # Building the query to get the median price for each room type
-    stmt = (
-        select(
-            [
-                models.RoomTypes.room_type,
-                func.median(models.ListingsCore.price).label("median_price"),
-            ]
-        )
+def chart_price_dist_by_room_type(session, city_name):
+    # Query the necessary data
+    listings_query = (
+        session.query(ListingsCore.price, RoomTypes.room_type)
+        .join(RoomTypes, RoomTypes.room_type_id == ListingsCore.room_type_id)
+        .join(ListingsLocation, ListingsLocation.listing_id == ListingsCore.listing_id)
         .join(
-            models.ListingsCore,
-            models.ListingsCore.room_type_id == models.RoomTypes.room_type_id,
+            Neighborhoods,
+            Neighborhoods.neighborhood_id == ListingsLocation.neighborhood_id,
         )
-        .group_by(models.RoomTypes.room_type)
+        .join(Cities, Cities.city_id == Neighborhoods.city_id)
+        .filter(Cities.city == city_name)
     )
 
-    # Applying city filter if a specific city is selected
-    if city != "All Cities":
-        stmt = (
-            stmt.where(
-                models.ListingsLocation.neighborhood_id
-                == models.Neighborhoods.neighborhood_id
-            )
-            .where(models.Neighborhoods.city_id == models.Cities.city_id)
-            .where(models.Cities.city == city)
-        )
+    # Execute the query
+    results = listings_query.all()
 
-    # Executing the query
-    result = session.execute(stmt).fetchall()
+    # Prepare the data for visualization
+    data = [
+        {"room_type": result.room_type, "price": result.price} for result in results
+    ]
 
-    # Extracting room types and median prices from the query result
-    room_types = [row[0] for row in result]
-    median_prices = [row[1] for row in result]
+    # Define the Altair chart
+    chart = (
+        alt.Chart(alt.Data(values=data))
+        .mark_boxplot()
+        .encode(x="room_type:N", y="price:Q", tooltip=["room_type:N", "price:Q"])
+        .properties(title=f"Price Distribution by Room Type in {city_name}", width=400)
+    )
 
-    # Creating the bar chart using Streamlit
-    st.bar_chart(data=median_prices, index=room_types, use_container_width=True)
+    return chart
