@@ -1,9 +1,11 @@
+from datetime import datetime, timedelta
+
 import pandas as pd
-from sqlalchemy import inspect
+from sqlalchemy import and_, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from constants import AMENITY_CATEGORIES
+from constants import AMENITY_CATEGORIES, CHUNK_SIZE
 from database import models
 
 
@@ -280,3 +282,71 @@ def populate_amenity_tables(session: Session):
                 )
                 session.add(new_amenity)
         session.commit()
+
+
+def define_quarter(month):
+    """Helper function to determine the quarter of a given month."""
+    if month in [1, 2, 3]:
+        return 1
+    elif month in [4, 5, 6]:
+        return 2
+    elif month in [7, 8, 9]:
+        return 3
+    else:
+        return 4
+
+
+def update_listing_active_quarters(session):
+    # Get the most recent last_review date
+    max_last_review = session.query(
+        func.max(models.ListingsReviewsSummary.last_review)
+    ).scalar()
+    year, month, day = [int(part) for part in max_last_review.split("-")]
+    current_quarter = define_quarter(month)
+
+    # Map for updated column names
+    column_map = {
+        1: models.ListingsCore.was_active_most_recent_quarter,
+        2: models.ListingsCore.was_active_one_quarter_prior,
+        3: models.ListingsCore.was_active_two_quarters_prior,
+        4: models.ListingsCore.was_active_three_quarters_prior,
+        5: models.ListingsCore.was_active_four_quarters_prior,
+    }
+
+    # Define active quarter range for the last five quarters based on current_quarter
+    quarter_ranges = {}
+    for i in range(1, 6):
+        qtr = (current_quarter - i + 1) % 4 or 4
+        year_offset = 1 if (current_quarter - i + 1) <= 0 else 0
+        if qtr == 1:
+            start, end = f"{year - year_offset}-01-01", f"{year - year_offset}-03-31"
+        elif qtr == 2:
+            start, end = f"{year - year_offset}-04-01", f"{year - year_offset}-06-30"
+        elif qtr == 3:
+            start, end = f"{year - year_offset}-07-01", f"{year - year_offset}-09-30"
+        else:
+            start, end = f"{year - year_offset}-10-01", f"{year - year_offset}-12-31"
+        quarter_ranges[i] = (start, end)
+
+    # For each quarter, update the activity status of listings
+    for i, (start_date, end_date) in quarter_ranges.items():
+        active_listings = (
+            session.query(models.ListingsReviewsSummary.listing_id)
+            .filter(
+                and_(
+                    models.ListingsReviewsSummary.first_review <= end_date,
+                    models.ListingsReviewsSummary.last_review >= start_date,
+                )
+            )
+            .all()
+        )
+
+        active_listing_ids = [listing[0] for listing in active_listings]
+
+        # Chunk the updating process
+        for chunk_start in range(0, len(active_listing_ids), CHUNK_SIZE):
+            chunk = active_listing_ids[chunk_start : chunk_start + CHUNK_SIZE]
+            session.query(models.ListingsCore).filter(
+                models.ListingsCore.listing_id.in_(chunk)
+            ).update({column_map[i]: 1}, synchronize_session="fetch")
+            session.commit()

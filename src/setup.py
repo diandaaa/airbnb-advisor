@@ -42,8 +42,19 @@ def clean_listings_df(listings_df):
         constants.REVIEW_SCORES_COLUMNS
     ].round(2)
 
-    # Remove listings with no reviews in 2023 (the scrape year) or later
+    # Remove listings with no reviews in 2022 (the year prior to the scrape year) or later
     listings_df = listings_df[listings_df["last_review"].str[:4] >= "2022"].copy()
+
+    # Remove listings with years greater than 2023
+    listings_df = listings_df[~(listings_df["last_review"].str[:4] > "2023")].copy()
+
+    # For those in 2023, remove listings with a month after March
+    listings_df = listings_df[
+        ~(
+            (listings_df["last_review"].str[:7] > "2023-03")
+            & (listings_df["last_review"].str[:4] == "2023")
+        )
+    ].copy()
 
     # Filter out listings with minimum_nights of 7 or greater
     listings_df = listings_df[listings_df["minimum_nights"] < 7].copy()
@@ -93,6 +104,7 @@ def main():
     db_populating.populate_initial_tables(session, listings_df_clean)
     db_populating.populate_listings_tables(session, listings_df_clean)
     db_populating.populate_amenity_tables(session)
+    db_populating.update_listing_active_quarters(session)
 
     # Map amenities to listings through the ListingsAmenities table
     process_amenities(session, listings_df_clean)

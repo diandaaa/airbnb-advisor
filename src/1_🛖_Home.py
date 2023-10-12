@@ -12,9 +12,7 @@ from database.models import (
     Cities,
     ListingsCore,
     ListingsLocation,
-    ListingsReviewsSummary,
     Neighborhoods,
-    RoomTypes,
 )
 
 # Configure the page -----------------------------------------------------------
@@ -45,10 +43,6 @@ conn = st.experimental_connection(
     type="sql",
     url="sqlite:///data/listings.sqlite",  # SQLite connection URL
 )
-
-# Populate city name list if not already populated
-if "city_names" not in st.session_state:
-    st.session_state.city_names = utilities.load_city_names(conn)
 
 
 # Generate metrics--------------------------------------------------------------
@@ -125,7 +119,7 @@ with chart_col:
     metric3.metric("Listings", millify(listings_count))
 
     st.markdown(
-        "First review was on **May 3, 2009** and data was last updated on **March 28, 2023**. Listings with no reviews in or after 2022 were deemed inactive and removed. Because I am primarily interested in studying short term rentals (STRs), listings with 7+ nights required for a booking were also filtered out. Host and listing IDs were anonymized and listing geocoordinates removed for privacy."
+        "First review was on **May 3, 2009** and data was last updated on **March 31, 2023**. Some cities had data up to May 17th but were excluded to only keep complete quarters. Listings with no reviews in or after 2022 were deemed inactive and removed. Because I am primarily interested in studying short term rentals (STRs), listings with 7+ nights required for a booking were also filtered out. Host and listing IDs were anonymized and listing geocoordinates removed for privacy."
     )
 
     st.altair_chart(listings_city_counts_chart, use_container_width=True)

@@ -17,7 +17,31 @@ st.set_page_config(
     initial_sidebar_state="auto",
     menu_items=None,
 )
+
 st.title("🤖 Airbnb Advisor | AI Chat")
+
+st.write(
+    """
+    Welcome to the Airbnb Advisor! I'm here to assist you with insights from our Airbnb listings database.
+    
+    **Note:** This bot is specialized in answering questions about the dataset and cannot answer general questions.
+
+    **Example Queries:**
+    """
+)
+
+example_queries = [
+    "How many listings are in San Diego?",
+    "What percent of listings are owned by superhosts?",
+    "What's the average review score of listings in Los Angeles?",
+]
+
+for query in example_queries:
+    if st.button(query, type="primary"):
+        user_query = query
+        # Now, the user_query will be processed the same way as it's processed below in the code.
+        # The code to process the user_query can be put into a separate function to avoid duplication.
+        # For simplicity, I'm just setting user_query here.
 
 # Database URI from constants
 db_uri = f"sqlite:///{constants.DATABASE_PATH}"
@@ -44,7 +68,12 @@ else:
         openai_api_key = st.session_state.user_openai_key
 
 # Setup agent
-llm = OpenAI(openai_api_key=openai_api_key, temperature=0, streaming=True)
+llm = OpenAI(
+    openai_api_key=openai_api_key,
+    temperature=0,
+    streaming=True,
+    model="gpt-3.5-turbo-instruct",
+)
 
 
 @st.cache_resource(ttl="2h")
@@ -71,9 +100,13 @@ if "messages" not in st.session_state or st.sidebar.button("Clear message histor
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-user_query = st.chat_input(placeholder="Ask me anything!")
+user_query_input = st.chat_input(
+    placeholder="Ask me anything about the Airbnb dataset!"
+)
 
-if user_query:
+if user_query_input:
+    user_query = user_query_input
+
     st.session_state.messages.append({"role": "user", "content": user_query})
     st.chat_message("user").write(user_query)
 

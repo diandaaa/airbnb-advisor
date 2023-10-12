@@ -135,6 +135,11 @@ class ListingsCore(CustomBase):
     maximum_nights = Column(Integer)
     has_availability = Column(Integer)
     instant_bookable = Column(Integer)
+    was_active_most_recent_quarter = Column(Integer)
+    was_active_one_quarter_prior = Column(Integer)
+    was_active_two_quarters_prior = Column(Integer)
+    was_active_three_quarters_prior = Column(Integer)
+    was_active_four_quarters_prior = Column(Integer)
     # license = Column(String)
 
 
@@ -197,6 +202,13 @@ class ListingsAmenities(CustomBase):
     # While it seems unnecessary to have a primary key for a junction table, SQLAlchemy requires it and using a
     # composite key here nearly doubles the database size
     listing_amenity_id = Column(Integer, primary_key=True, autoincrement=True)
-
     listing_id = Column(Integer, ForeignKey("ListingsCore.listing_id"))
     amenity_id = Column(Integer, ForeignKey("Amenities.amenity_id"))
+
+
+# # Supplemental Listing ID Tables (for speedier metrics calculations) ----------------------------------------------
+# class ListingIDsCurrentByQuarter(CustomBase):
+#     __tablename__ = "ListingIDsCurrentQuarter"
+#     _table_type = "supplemental"
+#     listing_id = Column(Integer, primary_key=True)
+#     quarters_prior = Column(Integer, primary_key=True)

@@ -2,8 +2,43 @@
 DATABASE_PATH = "data/listings.sqlite"
 
 # Specify the cities list
-# Note: If this list is not specified, all cities in the data/usa folder will be used
-CITIES = []
+CITIES = [
+    "All Cities",
+    "Asheville",
+    "Austin",
+    "Bozeman",
+    "Broward County",
+    "Cambridge",
+    "Chicago",
+    "Clark County NV",
+    "Columbus",
+    "Dallas",
+    "Denver",
+    "Fort Worth",
+    "Hawaii",
+    "Jersey City",
+    "Los Angeles",
+    "Nashville",
+    "New Orleans",
+    "New York City",
+    "Newark",
+    "Oakland",
+    "Pacific Grove",
+    "Portland",
+    "Rhode Island",
+    "Salem",
+    "San Diego",
+    "San Francisco",
+    "San Mateo County",
+    "Santa Clara County",
+    "Santa Cruz County",
+    "Seattle",
+    "Twin Cities MSA",
+    "Washington DC",
+]
+
+# Specify the chunk size for updating active quarter columns of ListingsCore
+CHUNK_SIZE = 1000
 
 AIRBNB_COLORS = {
     "main": "#FF5A5F",  # Rausch
