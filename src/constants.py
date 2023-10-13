@@ -50,10 +50,10 @@ AIRBNB_COLORS = {
 
 BENS_COLORS = {
     "nature-green": "#236F21",
-    "tiffany-blue": "#83C5BE",
-    "alice-blue": "#EDF6F9",
-    "pale-dogwood": "#FFDDD2",
-    "charcoal": "#2E5266",
+    "rose": "#ED217C",
+    "space-cadet": "#2D3047",
+    "pale-dogwood": "#FFFD82",
+    "atomic-tangerine": "#FF9B71",
 }
 
 # Mapping official Airbnb categories
