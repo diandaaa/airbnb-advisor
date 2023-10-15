@@ -1,0 +1,322 @@
+{
+    "All Cities": {
+        "active_listings": 105301,
+        "active_listings_delta": 18582,
+        "active_hosts": 56791,
+        "active_hosts_delta": 9541,
+        "median_price": 163,
+        "median_review_score": 4.87,
+        "median_price_delta": -8,
+        "median_review_score_delta": 0.020000000000000462
+    },
+    "Asheville": {
+        "active_listings": 1863,
+        "active_listings_delta": -78,
+        "active_hosts": 1211,
+        "active_hosts_delta": -67,
+        "median_price": 131,
+        "median_review_score": 4.93,
+        "median_price_delta": 1,
+        "median_review_score_delta": 0.009999999999999787
+    },
+    "Austin": {
+        "active_listings": 5723,
+        "active_listings_delta": 1220,
+        "active_hosts": 3232,
+        "active_hosts_delta": 406,
+        "median_price": 184,
+        "median_review_score": 4.91,
+        "median_price_delta": -16,
+        "median_review_score_delta": 0.009999999999999787
+    },
+    "Bozeman": {
+        "active_listings": 98,
+        "active_listings_delta": -6,
+        "active_hosts": 72,
+        "active_hosts_delta": 8,
+        "median_price": 220,
+        "median_review_score": 4.94,
+        "median_price_delta": -29,
+        "median_review_score_delta": 0.020000000000000462
+    },
+    "Broward County": {
+        "active_listings": 10004,
+        "active_listings_delta": 3294,
+        "active_hosts": 4324,
+        "active_hosts_delta": 1476,
+        "median_price": 190,
+        "median_review_score": 4.83,
+        "median_price_delta": -1,
+        "median_review_score_delta": 0.040000000000000036
+    },
+    "Cambridge": {
+        "active_listings": 280,
+        "active_listings_delta": 29,
+        "active_hosts": 151,
+        "active_hosts_delta": -4,
+        "median_price": 146,
+        "median_review_score": 4.86,
+        "median_price_delta": -9,
+        "median_review_score_delta": -0.019999999999999574
+    },
+    "Chicago": {
+        "active_listings": 3269,
+        "active_listings_delta": 619,
+        "active_hosts": 1736,
+        "active_hosts_delta": 125,
+        "median_price": 116,
+        "median_review_score": 4.85,
+        "median_price_delta": -4,
+        "median_review_score_delta": 0.019999999999999574
+    },
+    "Clark County NV": {
+        "active_listings": 6605,
+        "active_listings_delta": 2703,
+        "active_hosts": 3238,
+        "active_hosts_delta": 1299,
+        "median_price": 160,
+        "median_review_score": 4.84,
+        "median_price_delta": -11,
+        "median_review_score_delta": 0.019999999999999574
+    },
+    "Columbus": {
+        "active_listings": 1524,
+        "active_listings_delta": 623,
+        "active_hosts": 611,
+        "active_hosts_delta": 202,
+        "median_price": 106,
+        "median_review_score": 4.88,
+        "median_price_delta": 4,
+        "median_review_score_delta": 0.040000000000000036
+    },
+    "Dallas": {
+        "active_listings": 550,
+        "active_listings_delta": -40,
+        "active_hosts": 358,
+        "active_hosts_delta": -12,
+        "median_price": 127,
+        "median_review_score": 4.78,
+        "median_price_delta": 2,
+        "median_review_score_delta": 0.0
+    },
+    "Denver": {
+        "active_listings": 2090,
+        "active_listings_delta": 498,
+        "active_hosts": 1654,
+        "active_hosts_delta": 390,
+        "median_price": 128,
+        "median_review_score": 4.92,
+        "median_price_delta": -1,
+        "median_review_score_delta": 0.009999999999999787
+    },
+    "Fort Worth": {
+        "active_listings": 0,
+        "active_listings_delta": 0,
+        "active_hosts": 0,
+        "active_hosts_delta": 0,
+        "median_price": null,
+        "median_review_score": null,
+        "median_price_delta": 0,
+        "median_review_score_delta": 0
+    },
+    "Hawaii": {
+        "active_listings": 13763,
+        "active_listings_delta": -393,
+        "active_hosts": 5264,
+        "active_hosts_delta": 530,
+        "median_price": 250,
+        "median_review_score": 4.86,
+        "median_price_delta": -24,
+        "median_review_score_delta": 0.03000000000000025
+    },
+    "Jersey City": {
+        "active_listings": 432,
+        "active_listings_delta": 152,
+        "active_hosts": 274,
+        "active_hosts_delta": 100,
+        "median_price": 123,
+        "median_review_score": 4.82,
+        "median_price_delta": 4,
+        "median_review_score_delta": 0.07000000000000028
+    },
+    "Los Angeles": {
+        "active_listings": 11806,
+        "active_listings_delta": 3725,
+        "active_hosts": 6968,
+        "active_hosts_delta": 1780,
+        "median_price": 174,
+        "median_review_score": 4.88,
+        "median_price_delta": 9,
+        "median_review_score_delta": 0.019999999999999574
+    },
+    "Nashville": {
+        "active_listings": 5102,
+        "active_listings_delta": 965,
+        "active_hosts": 2280,
+        "active_hosts_delta": 402,
+        "median_price": 210,
+        "median_review_score": 4.89,
+        "median_price_delta": -8,
+        "median_review_score_delta": 0.009999999999999787
+    },
+    "New Orleans": {
+        "active_listings": 3929,
+        "active_listings_delta": 679,
+        "active_hosts": 2030,
+        "active_hosts_delta": 321,
+        "median_price": 172,
+        "median_review_score": 4.86,
+        "median_price_delta": -3,
+        "median_review_score_delta": 0.010000000000000675
+    },
+    "New York City": {
+        "active_listings": 11043,
+        "active_listings_delta": 2475,
+        "active_hosts": 7711,
+        "active_hosts_delta": 1713,
+        "median_price": 131,
+        "median_review_score": 4.83,
+        "median_price_delta": -4,
+        "median_review_score_delta": 0.03000000000000025
+    },
+    "Newark": {
+        "active_listings": 755,
+        "active_listings_delta": 317,
+        "active_hosts": 298,
+        "active_hosts_delta": 133,
+        "median_price": 66,
+        "median_review_score": 4.77,
+        "median_price_delta": 1,
+        "median_review_score_delta": 0.03999999999999915
+    },
+    "Oakland": {
+        "active_listings": 934,
+        "active_listings_delta": 20,
+        "active_hosts": 661,
+        "active_hosts_delta": -18,
+        "median_price": 114,
+        "median_review_score": 4.87,
+        "median_price_delta": -1,
+        "median_review_score_delta": 0.020000000000000462
+    },
+    "Pacific Grove": {
+        "active_listings": 80,
+        "active_listings_delta": -12,
+        "active_hosts": 37,
+        "active_hosts_delta": -3,
+        "median_price": 339,
+        "median_review_score": 4.89,
+        "median_price_delta": 0,
+        "median_review_score_delta": 0.0
+    },
+    "Portland": {
+        "active_listings": 2317,
+        "active_listings_delta": 80,
+        "active_hosts": 1726,
+        "active_hosts_delta": 11,
+        "median_price": 99,
+        "median_review_score": 4.92,
+        "median_price_delta": 0,
+        "median_review_score_delta": 0.009999999999999787
+    },
+    "Rhode Island": {
+        "active_listings": 1321,
+        "active_listings_delta": -774,
+        "active_hosts": 794,
+        "active_hosts_delta": -523,
+        "median_price": 145,
+        "median_review_score": 4.9,
+        "median_price_delta": -75,
+        "median_review_score_delta": 0.0
+    },
+    "Salem": {
+        "active_listings": 133,
+        "active_listings_delta": 28,
+        "active_hosts": 98,
+        "active_hosts_delta": 24,
+        "median_price": 109,
+        "median_review_score": 4.91,
+        "median_price_delta": 6,
+        "median_review_score_delta": 0.009999999999999787
+    },
+    "San Diego": {
+        "active_listings": 6754,
+        "active_listings_delta": 794,
+        "active_hosts": 3280,
+        "active_hosts_delta": 468,
+        "median_price": 180,
+        "median_review_score": 4.85,
+        "median_price_delta": -12,
+        "median_review_score_delta": 0.019999999999999574
+    },
+    "San Francisco": {
+        "active_listings": 1999,
+        "active_listings_delta": 0,
+        "active_hosts": 1401,
+        "active_hosts_delta": 101,
+        "median_price": 155,
+        "median_review_score": 4.9,
+        "median_price_delta": -7,
+        "median_review_score_delta": 0.010000000000000675
+    },
+    "San Mateo County": {
+        "active_listings": 1484,
+        "active_listings_delta": 163,
+        "active_hosts": 888,
+        "active_hosts_delta": 71,
+        "median_price": 151,
+        "median_review_score": 4.87,
+        "median_price_delta": -3,
+        "median_review_score_delta": 0.009999999999999787
+    },
+    "Santa Clara County": {
+        "active_listings": 2260,
+        "active_listings_delta": 295,
+        "active_hosts": 1212,
+        "active_hosts_delta": 135,
+        "median_price": 116,
+        "median_review_score": 4.88,
+        "median_price_delta": 1,
+        "median_review_score_delta": 0.019999999999999574
+    },
+    "Santa Cruz County": {
+        "active_listings": 771,
+        "active_listings_delta": -135,
+        "active_hosts": 523,
+        "active_hosts_delta": -42,
+        "median_price": 243,
+        "median_review_score": 4.9,
+        "median_price_delta": -32,
+        "median_review_score_delta": 0.020000000000000462
+    },
+    "Seattle": {
+        "active_listings": 3056,
+        "active_listings_delta": 562,
+        "active_hosts": 1968,
+        "active_hosts_delta": 277,
+        "median_price": 127,
+        "median_review_score": 4.9,
+        "median_price_delta": 1,
+        "median_review_score_delta": 0.010000000000000675
+    },
+    "Twin Cities MSA": {
+        "active_listings": 2113,
+        "active_listings_delta": 156,
+        "active_hosts": 1394,
+        "active_hosts_delta": 131,
+        "median_price": 118,
+        "median_review_score": 4.91,
+        "median_price_delta": 0,
+        "median_review_score_delta": 0.020000000000000462
+    },
+    "Washington DC": {
+        "active_listings": 2320,
+        "active_listings_delta": 305,
+        "active_hosts": 1515,
+        "active_hosts_delta": 192,
+        "median_price": 140,
+        "median_review_score": 4.87,
+        "median_price_delta": 2,
+        "median_review_score_delta": 0.020000000000000462
+    }
+}

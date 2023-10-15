@@ -13,10 +13,8 @@ def median_superhost_price(session: Session, city: str):
     query = session.query(models.ListingsCore.price).join(models.Hosts)
 
     if city != "All Cities":
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 
@@ -28,6 +26,9 @@ def median_superhost_price(session: Session, city: str):
     return sorted(prices)[len(prices) // 2] if prices else None
 
 
+# Similar changes can be made to other functions
+
+
 def mean_price(session: Session, city: str):
     """
     Calculate the mean price across all active listings.
@@ -35,10 +36,8 @@ def mean_price(session: Session, city: str):
     query = session.query(func.avg(models.ListingsCore.price))
 
     if city != "All Cities":
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 
@@ -54,10 +53,8 @@ def ninetieth_percentile_price(session: Session, city: str):
     query = session.query(models.ListingsCore.price)
 
     if city != "All Cities":
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 
@@ -75,10 +72,8 @@ def median_superhost_price_delta(session: Session, city: str):
 
     query = session.query(models.ListingsCore.price).join(models.Hosts)
     if city != "All Cities":
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 
@@ -100,10 +95,8 @@ def mean_price_delta(session: Session, city: str):
     query = session.query(func.avg(models.ListingsCore.price))
 
     if city != "All Cities":
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 
@@ -116,7 +109,6 @@ def mean_price_delta(session: Session, city: str):
 def mean_new_listing_price(session: Session, city: str):
     """
     Calculate the mean listing price of new listings in the most recent quarter.
-    New listings are identified based on the first_review date from the ListingsReviewsSummary table.
     """
     query = (
         session.query(models.ListingsCore.price)
@@ -127,22 +119,16 @@ def mean_new_listing_price(session: Session, city: str):
         .filter(models.ListingsCore.was_active_most_recent_quarter == 1)
     )
 
-    # Filter by city if "All Cities" is not selected
     if city != "All Cities":
-        # Join with ListingsLocation to filter by city
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 
     new_listing_prices = query.filter(
         models.ListingsReviewsSummary.first_review.like("2023-%")
     ).all()
-    new_listing_prices = [
-        p[0] for p in new_listing_prices
-    ]  # Extract prices from tuples
+    new_listing_prices = [p[0] for p in new_listing_prices]
 
     return (
         sum(new_listing_prices) / len(new_listing_prices) if new_listing_prices else 0
@@ -154,7 +140,6 @@ def mean_new_listing_price_delta(session: Session, city: str):
     Calculate the change in the mean listing price for new listings from four quarters prior.
     """
     current_mean_price = mean_new_listing_price(session, city)
-
     query = (
         session.query(models.ListingsCore.price)
         .join(
@@ -164,30 +149,23 @@ def mean_new_listing_price_delta(session: Session, city: str):
         .filter(models.ListingsCore.was_active_four_quarters_prior == 1)
     )
 
-    # Filter by city if "All Cities" is not selected
     if city != "All Cities":
-        # Join with ListingsLocation to filter by city
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 
     previous_new_listing_prices = query.filter(
         models.ListingsReviewsSummary.first_review.like("2022-%")
     ).all()
-    previous_new_listing_prices = [
-        p[0] for p in previous_new_listing_prices
-    ]  # Extract prices from tuples
+    previous_new_listing_prices = [p[0] for p in previous_new_listing_prices]
 
-    previous_mean_price = (
-        sum(previous_new_listing_prices) / len(previous_new_listing_prices)
+    return (
+        current_mean_price
+        - sum(previous_new_listing_prices) / len(previous_new_listing_prices)
         if previous_new_listing_prices
         else 0
     )
-
-    return current_mean_price - previous_mean_price
 
 
 def ninetieth_percentile_price_delta(session: Session, city: str):
@@ -195,13 +173,11 @@ def ninetieth_percentile_price_delta(session: Session, city: str):
     Calculate the change in 90th percentile price from four quarters ago.
     """
     current_90th = ninetieth_percentile_price(session, city)
-
     query = session.query(models.ListingsCore.price)
+
     if city != "All Cities":
-        query = (
-            query.join(models.ListingsLocation)
-            .join(models.Neighborhoods)
-            .join(models.Cities)
+        query = query.join(
+            models.Cities, models.ListingsCore.city_id == models.Cities.city_id
         )
         query = query.filter(models.Cities.city == city)
 

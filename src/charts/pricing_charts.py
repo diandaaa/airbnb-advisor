@@ -2,25 +2,17 @@ import altair as alt
 import pandas as pd
 
 from constants import BENS_COLORS
-from database.models import (
-    Cities,
-    ListingsCore,
-    ListingsLocation,
-    Neighborhoods,
-    RoomTypes,
-)
+from database.models import Cities, ListingsCore, Neighborhoods, RoomTypes
 
 
 def chart_price_dist_by_room_type(session, city):
     query = (
         session.query(ListingsCore.price, RoomTypes.room_type)
         .join(RoomTypes, RoomTypes.room_type_id == ListingsCore.room_type_id)
-        .join(ListingsLocation, ListingsLocation.listing_id == ListingsCore.listing_id)
         .join(
-            Neighborhoods,
-            Neighborhoods.neighborhood_id == ListingsLocation.neighborhood_id,
+            Neighborhoods, Neighborhoods.neighborhood_id == ListingsCore.neighborhood_id
         )
-        .join(Cities, Cities.city_id == Neighborhoods.city_id)
+        .join(Cities, Cities.city_id == ListingsCore.city_id)
     )
 
     if city != "All Cities":

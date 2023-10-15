@@ -149,34 +149,6 @@ class ListingsCore(CustomBase):
     # license = Column(String)
 
 
-# Listings Extension Tables ---------------------------------------------------------------------------------------
-# class ListingsAvailability(CustomBase):
-#     __tablename__ = "ListingsAvailability"
-#     _table_type = "extension"
-#     _description = "Extension table for listing availability"
-
-#     listing_id = Column(
-#         Integer, ForeignKey("ListingsCore.listing_id"), primary_key=True
-#     )
-#     availability_30 = Column(Integer)
-#     availability_60 = Column(Integer)
-#     availability_90 = Column(Integer)
-#     availability_365 = Column(Integer)
-
-
-# class ListingsLocation(CustomBase):
-#     __tablename__ = "ListingsLocation"
-#     _table_type = "extension"
-#     _description = "Extension table for listing location"
-
-#     listing_id = Column(
-#         Integer, ForeignKey("ListingsCore.listing_id"), primary_key=True
-#     )
-#     neighborhood_id = Column(Integer, ForeignKey("Neighborhoods.neighborhood_id"))
-#     latitude = Column(REAL)
-#     longitude = Column(REAL)
-
-
 class ListingsReviewsSummary(CustomBase):
     __tablename__ = "ListingsReviewsSummary"
     _table_type = "extension"
@@ -210,11 +182,3 @@ class ListingsAmenities(CustomBase):
     listing_amenity_id = Column(Integer, primary_key=True, autoincrement=True)
     listing_id = Column(Integer, ForeignKey("ListingsCore.listing_id"))
     amenity_id = Column(Integer, ForeignKey("Amenities.amenity_id"))
-
-
-# # Supplemental Listing ID Tables (for speedier metrics calculations) ----------------------------------------------
-# class ListingIDsCurrentByQuarter(CustomBase):
-#     __tablename__ = "ListingIDsCurrentQuarter"
-#     _table_type = "supplemental"
-#     listing_id = Column(Integer, primary_key=True)
-#     quarters_prior = Column(Integer, primary_key=True)

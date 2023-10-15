@@ -108,12 +108,6 @@ with overview_tab:
         ),
         use_container_width=True,
     )
-    st.altair_chart(
-        overview_charts.chart_room_type_counts(
-            conn.session, st.session_state.selected_city
-        ),
-        use_container_width=True,
-    )
 
 # Applying prefix logic for the pricing tab metrics
 with pricing_tab:

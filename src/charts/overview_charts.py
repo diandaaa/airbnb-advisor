@@ -1,49 +1,77 @@
-import altair as alt
-from sqlalchemy import extract, func
+from datetime import datetime
 
-from database.models import Cities, Hosts, ListingsCore, ListingsReviewsSummary
+import altair as alt
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+from sqlalchemy.orm import joinedload
+
+from constants import BENS_COLORS
+from database.models import (
+    Cities,
+    Hosts,
+    ListingsCore,
+    ListingsReviewsSummary,
+    Neighborhoods,
+)
+
+
+def calculate_age(start_date_str, end_date_str="2023-10-01"):
+    if start_date_str is None:
+        return None
+
+    start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+    delta = relativedelta(end_date, start_date)
+    return delta.years
 
 
 def chart_active_listings_hosts_age(session, city):
-    # Querying active listings and hosts from the database
     query = (
         session.query(
-            extract("year", ListingsReviewsSummary.first_review).label("year"),
-            func.count(ListingsCore.listing_id).label("active_listings"),
-            func.count(Hosts.host_id).label("active_hosts"),
+            ListingsCore, ListingsReviewsSummary, Hosts, Neighborhoods, Cities
         )
         .join(
-            ListingsCore, ListingsCore.listing_id == ListingsReviewsSummary.listing_id
+            ListingsReviewsSummary,
+            ListingsReviewsSummary.listing_id == ListingsCore.listing_id,
         )
         .join(Hosts, Hosts.host_id == ListingsCore.host_id)
+        .join(
+            Neighborhoods, Neighborhoods.neighborhood_id == ListingsCore.neighborhood_id
+        )
+        .join(Cities, Cities.city_id == ListingsCore.city_id)
         .filter(ListingsCore.was_active_most_recent_quarter == 1)
-        .group_by("year")
-        .order_by("year")
     )
 
     if city != "All Cities":
-        query = query.join(Cities, Cities.city_id == ListingsCore.city_id).filter(
-            Cities.city == city
-        )
+        query = query.filter(Cities.city == city)
 
-    results = query.all()
+    data = []
+    for lc, lrs, h, n, c in query:
+        host_age = calculate_age(h.host_since)
+        listing_age = calculate_age(lrs.first_review)
 
-    # Creating a dataframe for Altair chart
-    import pandas as pd
+        if host_age is not None:
+            data.append({"id": lc.host_id, "age": host_age, "type": "Host"})
 
-    df = pd.DataFrame(results)
+        if listing_age is not None:
+            data.append({"id": lc.listing_id, "age": listing_age, "type": "Listing"})
 
-    # Creating Altair bar chart
+    source = pd.DataFrame(data)
+
+    # Altair area chart
     chart = (
-        alt.Chart(df)
-        .mark_bar()
+        alt.Chart(source)
+        .transform_aggregate(count="count()", groupby=["age", "type"])
+        .mark_area(opacity=0.7)
         .encode(
-            alt.X("year:O", title="Year"),
-            alt.Y("active_listings:Q", title="Number of Active Listings"),
-            alt.Y2("active_hosts:Q"),
-            tooltip=["year:O", "active_listings:Q", "active_hosts:Q"],
+            x=alt.X("age:O", title="Age"),
+            y=alt.Y("count:Q", title="Count"),
+            color=alt.Color(
+                "type:N",
+                legend=alt.Legend(title="Type"),
+                scale=alt.Scale(domain=["Host", "Listing"]),
+            ),
         )
-        .properties(title="Active Listings and Hosts by Year")
     )
 
     return chart
