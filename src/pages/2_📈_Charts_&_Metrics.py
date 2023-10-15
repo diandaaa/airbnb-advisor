@@ -103,7 +103,7 @@ with overview_tab:
     )
 
     st.altair_chart(
-        overview_charts.chart_active_listings(
+        overview_charts.chart_active_listings_hosts_age(
             conn.session, st.session_state.selected_city
         ),
         use_container_width=True,

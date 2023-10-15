@@ -168,6 +168,11 @@ def get_neighborhood_id(session, neighborhood_name):
     return neighborhood.neighborhood_id if neighborhood else None
 
 
+def get_city_id(session, city_name):
+    city = session.query(models.Cities).filter_by(city=city_name).first()
+    return city.city_id if city else None
+
+
 def get_property_type_id(session, property_type_name):
     property_type = (
         session.query(models.PropertyTypes)
@@ -199,6 +204,8 @@ def populate_listings_core(session, df):
             maximum_nights=row["maximum_nights"],
             has_availability=row["has_availability"],
             instant_bookable=row["instant_bookable"],
+            neighborhood_id=get_neighborhood_id(session, row["neighborhood"]),
+            city_id=get_city_id(session, row["city"]),
             # license=row["license"],
         )
         session.add(listing)
@@ -216,15 +223,15 @@ def populate_listings_availability(session, df):
         session.add(availability)
 
 
-def populate_listings_location(session, df):
-    for _, row in df.iterrows():
-        location = models.ListingsLocation(
-            listing_id=row["listing_id"],
-            neighborhood_id=get_neighborhood_id(session, row["neighborhood"]),
-            # latitude=row["latitude"],  # not used in the app (makes DB too large for GitHub)
-            # longitude=row["longitude"],  # not used in the app (makes DB too large for GitHub)
-        )
-        session.add(location)
+# def populate_listings_location(session, df):
+#     for _, row in df.iterrows():
+#         location = models.ListingsLocation(
+#             listing_id=row["listing_id"],
+#             neighborhood_id=get_neighborhood_id(session, row["neighborhood"]),
+#             # latitude=row["latitude"],  # not used in the app (makes DB too large for GitHub)
+#             # longitude=row["longitude"],  # not used in the app (makes DB too large for GitHub)
+#         )
+#         session.add(location)
 
 
 def populate_listings_reviews_summary(session, df):
@@ -250,7 +257,7 @@ def populate_listings_reviews_summary(session, df):
 def populate_listings_tables(session, df):
     populate_listings_core(session, df)
     # populate_listings_availability(session, df) # not used in the app (makes DB too large for GitHub)
-    populate_listings_location(session, df)
+    # populate_listings_location(session, df)
     populate_listings_reviews_summary(session, df)
 
     session.commit()

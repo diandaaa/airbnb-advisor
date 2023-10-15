@@ -18,7 +18,7 @@ from database.models import (
 # Configure the page -----------------------------------------------------------
 st.set_page_config(
     page_title="Airbnb Dash | Home",
-    page_icon=":hut:",
+    page_icon="🏡",
     layout="wide",
     initial_sidebar_state="auto",
     menu_items=None,

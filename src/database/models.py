@@ -61,6 +61,17 @@ class Neighborhoods(CustomBase):
     city_id = Column(Integer, ForeignKey("Cities.city_id"))
 
 
+class Cities(CustomBase):
+    __tablename__ = "Cities"
+    _table_type = "heirarchical_lookup"
+    _description = (
+        "Heirarchical lookup table for listing cities; parent to Neighborhoods"
+    )
+
+    city_id = Column(Integer, primary_key=True, autoincrement=True)
+    city = Column(String, unique=True)
+
+
 class Amenities(CustomBase):
     __tablename__ = "Amenities"
     _table_type = "heirarchical_lookup"
@@ -76,15 +87,6 @@ class Amenities(CustomBase):
 
 
 # Heirarchical Lookup Tables (Level 2) -----------------------------------------------------------------------------
-class Cities(CustomBase):
-    __tablename__ = "Cities"
-    _table_type = "heirarchical_lookup"
-    _description = (
-        "Heirarchical lookup table for listing cities; parent to Neighborhoods"
-    )
-
-    city_id = Column(Integer, primary_key=True, autoincrement=True)
-    city = Column(String, unique=True)
 
 
 class AmenityCategories(CustomBase):
@@ -140,6 +142,10 @@ class ListingsCore(CustomBase):
     was_active_two_quarters_prior = Column(Integer)
     was_active_three_quarters_prior = Column(Integer)
     was_active_four_quarters_prior = Column(Integer)
+
+    # Added neighborhood_id and city_id to ListingsCore to speed up queries
+    neighborhood_id = Column(Integer, ForeignKey("Neighborhoods.neighborhood_id"))
+    city_id = Column(Integer, ForeignKey("Cities.city_id"))
     # license = Column(String)
 
 
@@ -158,17 +164,17 @@ class ListingsCore(CustomBase):
 #     availability_365 = Column(Integer)
 
 
-class ListingsLocation(CustomBase):
-    __tablename__ = "ListingsLocation"
-    _table_type = "extension"
-    _description = "Extension table for listing location"
+# class ListingsLocation(CustomBase):
+#     __tablename__ = "ListingsLocation"
+#     _table_type = "extension"
+#     _description = "Extension table for listing location"
 
-    listing_id = Column(
-        Integer, ForeignKey("ListingsCore.listing_id"), primary_key=True
-    )
-    neighborhood_id = Column(Integer, ForeignKey("Neighborhoods.neighborhood_id"))
-    # latitude = Column(REAL)
-    # longitude = Column(REAL)
+#     listing_id = Column(
+#         Integer, ForeignKey("ListingsCore.listing_id"), primary_key=True
+#     )
+#     neighborhood_id = Column(Integer, ForeignKey("Neighborhoods.neighborhood_id"))
+#     latitude = Column(REAL)
+#     longitude = Column(REAL)
 
 
 class ListingsReviewsSummary(CustomBase):
