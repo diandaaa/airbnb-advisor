@@ -6,7 +6,6 @@ from sqlalchemy import func
 
 import utilities
 from constants import BENS_COLORS as COLORS
-from constants import CITIES
 from database.models import Amenities, Cities, ListingsCore, Neighborhoods
 
 # Configure the page -----------------------------------------------------------
