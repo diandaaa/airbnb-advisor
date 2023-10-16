@@ -1,12 +1,10 @@
-import altair as alt
-import pandas as pd
+import json
+
 import streamlit as st
 from millify import millify
-from sqlalchemy import func
 
 import utilities
-from charts import overview_charts, pricing_charts
-from constants import BENS_COLORS as COLORS
+from charts import overview_charts, pricing_charts, reviews_charts
 from constants import CITIES
 from metrics import overview_metrics, pricing_metrics, reviews_metrics
 
@@ -16,7 +14,12 @@ def get_prefix(value):
     return "-" if value < 0 else ""
 
 
-# Configure the page -----------------------------------------------------------
+# Load metrics data from the JSON file
+with open("data/metrics.json", "r") as file:
+    metrics_data = json.load(file)
+
+
+# Configure the page
 st.set_page_config(
     page_title="Airbnb Advisor | Charts",
     page_icon="📈",
@@ -26,7 +29,7 @@ st.set_page_config(
 )
 
 
-# Configure the sidebar --------------------------------------------------------
+# Configure the sidebar
 st.sidebar.text("")
 st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
@@ -52,6 +55,9 @@ st.session_state.selected_city = st.selectbox(
     "Which city would you like to explore?", CITIES
 )
 
+selected_city = st.session_state.selected_city
+selected_city_data = metrics_data.get(selected_city, metrics_data["All Cities"])
+
 
 overview_tab, pricing_tab, reviews_tab = st.tabs(["Overview", "Pricing", "Reviews"])
 
@@ -62,43 +68,29 @@ with overview_tab:
 
     col1.metric(
         "Active Listings",
-        millify(
-            overview_metrics.active_listings(
-                conn.session, st.session_state.selected_city
-            )
-        ),
-        delta=f"{millify(overview_metrics.active_listings_delta(conn.session, st.session_state.selected_city))}",
+        millify(selected_city_data["active_listings"]),
+        delta=millify(selected_city_data["active_listings_delta"]),
     )
+
     col2.metric(
         "Active Hosts",
-        millify(
-            overview_metrics.active_hosts(conn.session, st.session_state.selected_city)
-        ),
-        delta=f"{millify(overview_metrics.active_hosts_delta(conn.session, st.session_state.selected_city))}",
+        millify(selected_city_data["active_hosts"]),
+        delta=millify(selected_city_data["active_hosts_delta"]),
     )
+
     col3.metric(
         "Median Review Score",
-        f"{overview_metrics.median_review_score(conn.session, st.session_state.selected_city)}/5",
-        delta=round(
-            overview_metrics.median_review_score_delta(
-                conn.session, st.session_state.selected_city
-            ),
-            0,
-        ),
+        f"{selected_city_data['median_review_score']}/5",
+        delta=round(selected_city_data["median_review_score_delta"], 2),
     )
 
     # Applying prefix logic for the overview metrics
-    prefix_overview = get_prefix(
-        overview_metrics.median_price(conn.session, st.session_state.selected_city)
-    )
-    delta_value = overview_metrics.median_price_delta(
-        conn.session, st.session_state.selected_city
-    )
-    formatted_delta = f"{prefix_overview}${millify(int(abs(delta_value)))}"
+    prefix_overview = get_prefix(selected_city_data["median_price"])
+    formatted_delta = f"{prefix_overview}${millify(int(abs(selected_city_data['median_price_delta'])))}"
 
     col4.metric(
         "Median Nightly Price",
-        f"${int(overview_metrics.median_price(conn.session, st.session_state.selected_city))}",
+        f"${int(selected_city_data['median_price'])}",
         delta=formatted_delta,
     )
 
@@ -109,96 +101,35 @@ with overview_tab:
         use_container_width=True,
     )
 
-# Applying prefix logic for the pricing tab metrics
 with pricing_tab:
     col1, col2, col3, col4 = st.columns(4)
-    prefix_mean_price = get_prefix(
-        pricing_metrics.mean_price_delta(conn.session, st.session_state.selected_city)
-    )
-    mean_price_value = int(
-        pricing_metrics.mean_price(conn.session, st.session_state.selected_city)
-    )
-    mean_price_delta_value = int(
-        pricing_metrics.mean_price_delta(conn.session, st.session_state.selected_city)
-    )
 
+    # Access values directly from the selected city's data in the loaded JSON
     col1.metric(
         "Mean Price",
-        f"${mean_price_value}",
-        delta=f"{prefix_mean_price}${millify(abs(mean_price_delta_value))}",
-    )
-
-    prefix_new_listing_price = get_prefix(
-        pricing_metrics.mean_new_listing_price_delta(
-            conn.session, st.session_state.selected_city
-        )
-    )
-    new_listing_price_value = int(
-        pricing_metrics.mean_new_listing_price(
-            conn.session, st.session_state.selected_city
-        )
-    )
-    new_listing_price_delta_value = int(
-        pricing_metrics.mean_new_listing_price_delta(
-            conn.session, st.session_state.selected_city
-        )
+        f"${selected_city_data['mean_price']}",
+        delta=f"${millify(abs(selected_city_data['mean_price_delta']))}",
     )
 
     col2.metric(
         "Mean New Listing Price",
-        f"${new_listing_price_value}",
-        delta=f"{prefix_new_listing_price}${millify(abs(new_listing_price_delta_value))}",
-    )
-
-    prefix_ninetieth_percentile = get_prefix(
-        pricing_metrics.ninetieth_percentile_price_delta(
-            conn.session, st.session_state.selected_city
-        )
-    )
-    ninetieth_percentile_price_value = int(
-        pricing_metrics.ninetieth_percentile_price(
-            conn.session, st.session_state.selected_city
-        )
-    )
-    ninetieth_percentile_price_delta_value = int(
-        pricing_metrics.ninetieth_percentile_price_delta(
-            conn.session, st.session_state.selected_city
-        )
+        f"${selected_city_data['mean_new_listing_price']}",
+        delta=f"${millify(abs(selected_city_data['mean_new_listing_price_delta']))}",
     )
 
     col3.metric(
         "Ninetieth Percentile Price",
-        f"${ninetieth_percentile_price_value}",
-        delta=f"{prefix_ninetieth_percentile}${millify(abs(ninetieth_percentile_price_delta_value))}",
-    )
-
-    prefix_superhost = get_prefix(
-        pricing_metrics.median_superhost_price_delta(
-            conn.session, st.session_state.selected_city
-        )
-    )
-    median_superhost_price_value = int(
-        pricing_metrics.median_superhost_price(
-            conn.session, st.session_state.selected_city
-        )
-    )
-    median_superhost_price_delta_value = int(
-        pricing_metrics.median_superhost_price_delta(
-            conn.session, st.session_state.selected_city
-        )
+        f"${selected_city_data['ninetieth_percentile_price']}",
+        delta=f"${millify(abs(selected_city_data['ninetieth_percentile_price_delta']))}",
     )
 
     col4.metric(
         "Median Superhost Price",
-        f"${median_superhost_price_value}",
-        delta=f"{prefix_superhost}${millify(abs(median_superhost_price_delta_value))}",
+        f"${selected_city_data['median_superhost_price']}",
+        delta=f"${millify(abs(selected_city_data['median_superhost_price_delta']))}",
     )
 
-    st.altair_chart(
-        pricing_charts.chart_price_dist_by_room_type(
-            conn.session, st.session_state.selected_city
-        )
-    )
+    # Add any additional charts or elements here if needed
 
 
 with reviews_tab:
@@ -206,24 +137,24 @@ with reviews_tab:
 
     col1.metric(
         "Median Review Count",
-        f"{round(reviews_metrics.median_review_count(conn.session, st.session_state.selected_city), 2)}",
-        delta=f"{round(reviews_metrics.median_review_count_delta(conn.session, st.session_state.selected_city), 2)}",
+        f"{selected_city_data['median_review_count']}",
+        delta=f"{selected_city_data['median_review_count_delta']}",
     )
 
     col2.metric(
         "Mean Reviews Score",
-        f"{round(reviews_metrics.mean_reviews_score(conn.session, st.session_state.selected_city), 2)}/5",
-        delta=f"{round(reviews_metrics.mean_reviews_score_delta(conn.session, st.session_state.selected_city), 2)}",
+        f"{selected_city_data['mean_reviews_score']}/5",
+        delta=f"{selected_city_data['mean_reviews_score_delta']}",
     )
 
     col3.metric(
         "Mean Superhost Reviews Score",
-        f"{round(reviews_metrics.mean_superhost_reviews_score(conn.session, st.session_state.selected_city), 2)}/5",
-        delta=f"{round(reviews_metrics.mean_superhost_reviews_score_delta(conn.session, st.session_state.selected_city), 2)}",
+        f"{selected_city_data['mean_superhost_reviews_score']}/5",
+        delta=f"{selected_city_data['mean_superhost_reviews_score_delta']}",
     )
 
     col4.metric(
         "Superhost Percent",
-        f"{round(reviews_metrics.superhost_percent(conn.session, st.session_state.selected_city))}%",
-        delta=f"{round(reviews_metrics.superhost_percent_delta(conn.session, st.session_state.selected_city))}%",
+        f"{selected_city_data['superhost_percent']}%",
+        delta=f"{selected_city_data['superhost_percent_delta']}%",
     )
