@@ -58,6 +58,12 @@ def chart_active_listings_hosts_age(session, city):
 
     source = pd.DataFrame(data)
 
+    print(source.shape)
+    print(source.columns)
+    print(source["age"].unique())
+    print(source["type"].unique())
+    print(source.head())
+
     # Altair area chart
     chart = (
         alt.Chart(source)
@@ -68,10 +74,11 @@ def chart_active_listings_hosts_age(session, city):
             y=alt.Y("count:Q", title="Count"),
             color=alt.Color(
                 "type:N",
-                legend=alt.Legend(title="Type"),
                 scale=alt.Scale(domain=["Host", "Listing"]),
+                legend=alt.Legend(title="Type", orient="top"),
             ),
         )
+        .properties(title="Count of Active Listings and Hosts by Age")
     )
 
     return chart

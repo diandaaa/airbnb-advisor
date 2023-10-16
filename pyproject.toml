@@ -20,6 +20,7 @@ fuzzywuzzy = "^0.18.0"
 python-levenshtein = "^0.22.0"
 langchain = "^0.0.311"
 openai = "^0.28.1"
+vegafusion = {version = ">=1.4.0", extras = ["embed"]}
 
 
 [tool.poetry.group.dev.dependencies]

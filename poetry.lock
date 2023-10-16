@@ -3692,6 +3692,59 @@ tooling = ["black (>=23.7.0)", "pyright (>=1.1.325)", "ruff (>=0.0.287)"]
 tooling-extras = ["pyaml (>=23.7.0)", "pypandoc-binary (>=1.11)", "pytest (>=7.4.0)"]
 
 [[package]]
+name = "vegafusion"
+version = "1.4.1"
+description = "Core tools for using VegaFusion from Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "vegafusion-1.4.1-py3-none-any.whl", hash = "sha256:a5c5c55f0391b16f914a2a035bfea6f92c2836fbc60bcbbd6ce4a4e75a338440"},
+    {file = "vegafusion-1.4.1.tar.gz", hash = "sha256:203cca20e2485101618d36f846232edd343226999f6dcedb8f64e073e0142c2b"},
+]
+
+[package.dependencies]
+altair = ">=4.2.0"
+pandas = "*"
+protobuf = "*"
+psutil = "*"
+pyarrow = ">=5"
+vegafusion-python-embed = {version = "1.4.1", optional = true, markers = "extra == \"embed\""}
+vl-convert-python = {version = ">=0.7.0", optional = true, markers = "extra == \"embed\""}
+
+[package.extras]
+embed = ["vegafusion-python-embed (==1.4.1)", "vl-convert-python (>=0.7.0)"]
+
+[[package]]
+name = "vegafusion-python-embed"
+version = "1.4.1"
+description = "vegafusion-python-embed PyO3 Python Package"
+optional = false
+python-versions = "*"
+files = [
+    {file = "vegafusion_python_embed-1.4.1-cp38-abi3-macosx_10_7_x86_64.whl", hash = "sha256:7ff1881b98dab4c34228da439cc6f4096e01cdf7913bb47296b33eb4aec928dd"},
+    {file = "vegafusion_python_embed-1.4.1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:d1fbbbcef7250dacc711b688a89476c8269018679e463069a266473a90bb71c5"},
+    {file = "vegafusion_python_embed-1.4.1-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1c70af7092bc1c4679a4b1204285f11ed466e67c707237e2aa2f8aaaa51d9e8c"},
+    {file = "vegafusion_python_embed-1.4.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c44b47fc0ce6ba4c7dd7a106bdbff1b017239dd39733c32054dd48f6a88c44e4"},
+    {file = "vegafusion_python_embed-1.4.1-cp38-abi3-win_amd64.whl", hash = "sha256:cff7c73f801ce6eb597ac4e8ffe6467e7714516ac0aec07659e670e415591a00"},
+    {file = "vegafusion_python_embed-1.4.1.tar.gz", hash = "sha256:8ec624b537a42f6daa7eb04820cfdd6c51fd8614f0ab5590097280f549ae837a"},
+]
+
+[[package]]
+name = "vl-convert-python"
+version = "0.14.0"
+description = "Convert Vega-Lite chart specifications to SVG, PNG, or Vega"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "vl_convert_python-0.14.0-cp37-abi3-macosx_10_7_x86_64.whl", hash = "sha256:a93b8151871d4bc9efc2a7961395859411803f70ad32694e3b906d781233a921"},
+    {file = "vl_convert_python-0.14.0-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:9122ebca0a8fe54492019b395acca618595fc7b2f1d09a0e77cd0fbcd471b1a8"},
+    {file = "vl_convert_python-0.14.0-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5dcccdba6929b50179a3e702bf3e95dd31cfb9a98b7162c75a275865e320de98"},
+    {file = "vl_convert_python-0.14.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b0319723121785efb03d295949d46e4a0f4795afcea7aafb99d1e880b53d6b22"},
+    {file = "vl_convert_python-0.14.0-cp37-abi3-win_amd64.whl", hash = "sha256:b971bc56e5975dfaa4f43b03f59864ccdc566d822b780e111d13e3b32f019c39"},
+    {file = "vl_convert_python-0.14.0.tar.gz", hash = "sha256:8d3d63d7c8e446cb2e9bf2209513b3c608805152acdf50275a6f430fa18d6613"},
+]
+
+[[package]]
 name = "wasabi"
 version = "1.1.2"
 description = "A lightweight console printing and formatting toolkit"
@@ -3882,4 +3935,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6a13406d9644ece327da9f8d986189fa33c9f5cfceb3ba246ce211f45cd2624a"
+content-hash = "66e74bc206debeb12fcd2910ad3e50db370c477df98280610ed78759b6884529"

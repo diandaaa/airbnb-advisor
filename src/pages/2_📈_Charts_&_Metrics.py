@@ -1,14 +1,16 @@
-import altair as alt
-import pandas as pd
+import json
+
 import streamlit as st
 from millify import millify
-from sqlalchemy import func
 
 import utilities
 from charts import overview_charts, pricing_charts
-from constants import BENS_COLORS as COLORS
 from constants import CITIES
 from metrics import overview_metrics, pricing_metrics, reviews_metrics
+
+# Load metrics data from the JSON file
+with open("data/metrics.json", "r") as file:
+    metrics_data = json.load(file)
 
 
 # Function to determine the prefix
@@ -53,6 +55,9 @@ st.session_state.selected_city = st.selectbox(
 )
 
 
+selected_city = st.session_state.selected_city
+selected_city_data = metrics_data.get(selected_city, metrics_data["All Cities"])
+
 overview_tab, pricing_tab, reviews_tab = st.tabs(["Overview", "Pricing", "Reviews"])
 
 with overview_tab:
@@ -62,43 +67,29 @@ with overview_tab:
 
     col1.metric(
         "Active Listings",
-        millify(
-            overview_metrics.active_listings(
-                conn.session, st.session_state.selected_city
-            )
-        ),
-        delta=f"{millify(overview_metrics.active_listings_delta(conn.session, st.session_state.selected_city))}",
+        millify(selected_city_data["active_listings"]),
+        delta=millify(selected_city_data["active_listings_delta"]),
     )
+
     col2.metric(
         "Active Hosts",
-        millify(
-            overview_metrics.active_hosts(conn.session, st.session_state.selected_city)
-        ),
-        delta=f"{millify(overview_metrics.active_hosts_delta(conn.session, st.session_state.selected_city))}",
+        millify(selected_city_data["active_hosts"]),
+        delta=millify(selected_city_data["active_hosts_delta"]),
     )
+
     col3.metric(
         "Median Review Score",
-        f"{overview_metrics.median_review_score(conn.session, st.session_state.selected_city)}/5",
-        delta=round(
-            overview_metrics.median_review_score_delta(
-                conn.session, st.session_state.selected_city
-            ),
-            0,
-        ),
+        f"{selected_city_data['median_review_score']}/5",
+        delta=round(selected_city_data["median_review_score_delta"], 2),
     )
 
     # Applying prefix logic for the overview metrics
-    prefix_overview = get_prefix(
-        overview_metrics.median_price(conn.session, st.session_state.selected_city)
-    )
-    delta_value = overview_metrics.median_price_delta(
-        conn.session, st.session_state.selected_city
-    )
-    formatted_delta = f"{prefix_overview}${millify(int(abs(delta_value)))}"
+    prefix_overview = get_prefix(selected_city_data["median_price"])
+    formatted_delta = f"{prefix_overview}${millify(int(abs(selected_city_data['median_price_delta'])))}"
 
     col4.metric(
         "Median Nightly Price",
-        f"${int(overview_metrics.median_price(conn.session, st.session_state.selected_city))}",
+        f"${int(selected_city_data['median_price'])}",
         delta=formatted_delta,
     )
 

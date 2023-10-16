@@ -7,13 +7,7 @@ from sqlalchemy import func
 import utilities
 from constants import BENS_COLORS as COLORS
 from constants import CITIES
-from database.models import (
-    Amenities,
-    Cities,
-    ListingsCore,
-    ListingsLocation,
-    Neighborhoods,
-)
+from database.models import Amenities, Cities, ListingsCore, Neighborhoods
 
 # Configure the page -----------------------------------------------------------
 st.set_page_config(
@@ -62,15 +56,14 @@ listings_city_counts = pd.DataFrame(
             Cities.city.label("City"),
             func.count(ListingsCore.listing_id).label("Count"),
         )
-        .join(ListingsLocation, ListingsLocation.listing_id == ListingsCore.listing_id)
         .join(
-            Neighborhoods,
-            Neighborhoods.neighborhood_id == ListingsLocation.neighborhood_id,
+            Neighborhoods, Neighborhoods.neighborhood_id == ListingsCore.neighborhood_id
         )
-        .join(Cities, Cities.city_id == Neighborhoods.city_id)
+        .join(Cities, Cities.city_id == ListingsCore.city_id)
         .group_by(Cities.city)
     ).all()
 )
+
 
 listings_city_counts_chart = (
     alt.Chart(listings_city_counts, title="Listings by City")
