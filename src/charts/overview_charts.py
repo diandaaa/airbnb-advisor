@@ -129,7 +129,8 @@ def chart_room_types(session, city):
                 Cities.city == city
             )
 
-        data = [{"Room Type": rt.room_type, "Count": count} for rt, count in query]
+        data = [{"Room Type": rt, "Count": count} for rt, count in query]
+
         source = pd.DataFrame(data)
 
     # Check if DataFrame is empty and log it
