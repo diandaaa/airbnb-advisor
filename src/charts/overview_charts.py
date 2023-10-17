@@ -3,6 +3,7 @@ from datetime import datetime
 import altair as alt
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import func
 
 from constants import COLORS
 from database.models import (
@@ -11,6 +12,7 @@ from database.models import (
     ListingsCore,
     ListingsReviewsSummary,
     Neighborhoods,
+    RoomTypes,
 )
 from utilities import load_chart_data_from_file
 
@@ -95,6 +97,57 @@ def chart_active_listings_hosts_age(session, city):
         )
         .properties(
             title="Count of Active Listings and Hosts by Age",
+        )
+    )
+
+    return chart
+
+
+def chart_room_types(session, city):
+    print(f"Processing room types for city: {city}")  # Logging the current city
+
+    # Construct the chart name to match the JSON key
+    chart_name = f"chart_room_types_{city}"
+
+    # Load chart data from JSON file
+    data_values = load_chart_data_from_file(chart_name)
+
+    # If data exists in the JSON file, use it
+    if data_values:
+        source = pd.DataFrame(data_values)
+        print(f"Loaded data from JSON file for city: {city}")
+    # Otherwise, perform the database query
+    else:
+        query = (
+            session.query(RoomTypes.room_type, func.count(ListingsCore.listing_id))
+            .join(RoomTypes, RoomTypes.room_type_id == ListingsCore.room_type_id)
+            .group_by(RoomTypes.room_type)
+        )
+
+        if city != "All Cities":
+            query = query.filter(ListingsCore.city_id == Cities.city_id).filter(
+                Cities.city == city
+            )
+
+        data = [{"Room Type": rt.room_type, "Count": count} for rt, count in query]
+        source = pd.DataFrame(data)
+
+    # Check if DataFrame is empty and log it
+    if source.empty:
+        print(f"No data available for city: {city}")
+        return None  # You might want to return None or some default chart here
+
+    # Altair bar chart
+    chart = (
+        alt.Chart(source)
+        .mark_bar()
+        .encode(
+            x="Room Type",
+            y="Count",
+            color=alt.Color("Room Type:N", legend=alt.Legend(title="Room Type")),
+        )
+        .properties(
+            title=f"Count of Listings by Room Type in {city}",
         )
     )
 

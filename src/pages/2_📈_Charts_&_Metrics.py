@@ -96,6 +96,11 @@ with overview_tab:
         use_container_width=True,
     )
 
+    st.altair_chart(
+        overview_charts.chart_room_types(conn.session, selected_city),
+        use_container_width=True,
+    )
+
 with pricing_tab:
     col1, col2, col3, col4 = st.columns(4)
 
