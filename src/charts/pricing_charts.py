@@ -1,55 +1,129 @@
 import altair as alt
 import pandas as pd
+from sqlalchemy import func
 
 from constants import COLORS
 from database.models import Cities, ListingsCore, Neighborhoods, RoomTypes
+from utilities import load_chart_data_from_file
 
 
-def chart_price_dist_by_room_type(session, city):
-    query = (
-        session.query(ListingsCore.price, RoomTypes.room_type)
-        .join(RoomTypes, RoomTypes.room_type_id == ListingsCore.room_type_id)
-        .join(
-            Neighborhoods, Neighborhoods.neighborhood_id == ListingsCore.neighborhood_id
+def chart_mean_room_type_prices(session, city):
+    print(
+        f"Processing price distribution by room types for city: {city}"
+    )  # Logging the current city
+
+    # Construct the chart name to match the JSON key
+    chart_name = f"chart_price_dist_by_room_type_{city}"
+
+    # Load chart data from JSON file
+    data_values = load_chart_data_from_file(chart_name)
+
+    # If data exists in the JSON file, use it
+    if data_values:
+        source = pd.DataFrame(data_values)
+        print(f"Loaded data from JSON file for city: {city}")
+    # Otherwise, perform the database query
+    else:
+        query = (
+            session.query(RoomTypes.room_type, func.avg(ListingsCore.price))
+            .join(RoomTypes, RoomTypes.room_type_id == ListingsCore.room_type_id)
+            .group_by(RoomTypes.room_type)
         )
-        .join(Cities, Cities.city_id == ListingsCore.city_id)
+
+        if city != "All Cities":
+            query = query.filter(ListingsCore.city_id == Cities.city_id).filter(
+                Cities.city == city
+            )
+
+        data = [{"Room Type": rt, "Average Price": price} for rt, price in query]
+
+        source = pd.DataFrame(data)
+
+    # Check if DataFrame is empty and log it
+    if source.empty:
+        print(f"No data available for city: {city}")
+        return None  # You might want to return None or some default chart here
+
+    # Altair bar chart
+    chart = (
+        alt.Chart(source)
+        .mark_bar(opacity=0.7)
+        .encode(
+            x=alt.X("Room Type", title=None),
+            y=alt.Y(
+                "Average Price:Q", axis=alt.Axis(tickCount=5, format="$~s", title=None)
+            ),
+            color=alt.Color(
+                "Room Type:N",
+                scale=alt.Scale(range=COLORS),
+                legend=alt.Legend(title=None, orient="top"),
+            ),
+        )
+    )
+
+    return chart
+
+
+def chart_median_neighborhood_prices(session, city):
+    print(f"Processing median price distribution by neighborhoods for city: {city}")
+
+    # Construct the query
+    query = session.query(Neighborhoods.neighborhood, ListingsCore.price).join(
+        Neighborhoods, Neighborhoods.neighborhood_id == ListingsCore.neighborhood_id
     )
 
     if city != "All Cities":
-        query = query.filter(Cities.city == city)
+        query = query.filter(ListingsCore.city_id == Cities.city_id).filter(
+            Cities.city == city
+        )
 
-    results = query.all()
+    # Execute the query and get data
+    data = query.all()
 
-    # Convert results to a pandas DataFrame
-    data = pd.DataFrame(results, columns=["price", "room_type"])
+    # Processing the data to calculate medians
+    neighborhoods = {}
+    for neighborhood, price in data:
+        if neighborhood not in neighborhoods:
+            neighborhoods[neighborhood] = []
+        neighborhoods[neighborhood].append(price)
 
-    # Removing outliers: keeping only data below the 99th percentile
-    p99 = data["price"].quantile(0.99)
-    data = data[data["price"] < p99]
+    # Calculate median and sort by median price
+    median_prices = []
+    for neighborhood, prices in neighborhoods.items():
+        prices.sort()
+        n = len(prices)
+        median = (
+            prices[n // 2] if n % 2 != 0 else (prices[n // 2 - 1] + prices[n // 2]) / 2
+        )
+        median_prices.append({"Neighborhood": neighborhood, "Median Price": median})
 
-    # Picking the first four colors from BENS_COLORS
-    colors_to_use = list(COLORS.values())[:4]
+    # Sort neighborhoods by median price in descending order
+    median_prices = sorted(median_prices, key=lambda x: x["Median Price"], reverse=True)
 
-    # Creating an Altair chart
+    source = pd.DataFrame(median_prices)
+
+    # Check if DataFrame is empty and log it
+    if source.empty:
+        print(f"No data available for city: {city}")
+        return None  # You might want to return None or some default chart here
+
+    # Altair bar chart
     chart = (
-        alt.Chart(data)
-        .mark_area(opacity=0.7)
+        alt.Chart(source)
+        .mark_bar(opacity=0.7)
         .encode(
-            x=alt.X("price:Q", bin=alt.Bin(maxbins=100), title="Price"),
-            y="count():Q",
+            x=alt.X(
+                "Neighborhood:N", axis=alt.Axis(labelAngle=-90), title=None, sort="-y"
+            ),  # Explicitly sort bars based on the y-value
+            y=alt.Y(
+                "Median Price:Q",
+                axis=alt.Axis(tickCount=5, format="$~s", title="Median Price"),
+            ),
             color=alt.Color(
-                "room_type:N",
-                scale=alt.Scale(range=colors_to_use),
-                legend=alt.Legend(title=None),
-            ),  # Customizing legend
-            tooltip=["room_type", "count()", "mean(price)"],
+                "Neighborhood:N",
+                legend=None,  # No legend due to a large number of neighborhoods
+            ),
         )
-        .properties(
-            title="Price Distribution by Room Type",
-            width=600,
-            height=400,
-        )
-        .configure_legend(orient="top")
     )
 
     return chart

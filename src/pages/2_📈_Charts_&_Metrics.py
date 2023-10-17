@@ -88,15 +88,24 @@ with overview_tab:
         delta=formatted_delta,
     )
 
+    st.markdown("**Active Listings & Hosts by Years on Platform**")
     st.altair_chart(
         overview_charts.chart_active_listings_hosts_age(conn.session, selected_city),
         use_container_width=True,
     )
 
+    st.markdown("**Listings by Room Type**")
     st.altair_chart(
         overview_charts.chart_room_types(conn.session, selected_city),
         use_container_width=True,
     )
+
+    st.markdown("**Listings by Neighborhood**")
+    st.altair_chart(
+        overview_charts.chart_neighborhood_listings_count(conn.session, selected_city),
+        use_container_width=True,
+    )
+
 
 with pricing_tab:
     col1, col2, col3, col4 = st.columns(4)
@@ -104,14 +113,14 @@ with pricing_tab:
     # Access values directly from the selected city's data in the loaded JSON
     col1.metric(
         "Mean Price",
-        f"${selected_city_data['mean_price']}",
-        delta=f"${millify(abs(selected_city_data['mean_price_delta']))}",
+        f"${round(selected_city_data['mean_price'])}",
+        delta=f"${millify(abs(round(selected_city_data['mean_price_delta'])))}",
     )
 
     col2.metric(
         "Mean New Listing Price",
-        f"${selected_city_data['mean_new_listing_price']}",
-        delta=f"${millify(abs(selected_city_data['mean_new_listing_price_delta']))}",
+        f"${round(selected_city_data['mean_new_listing_price'])}",
+        delta=f"${millify(abs(round(selected_city_data['mean_new_listing_price_delta'])))}",
     )
 
     col3.metric(
@@ -126,7 +135,17 @@ with pricing_tab:
         delta=f"${millify(abs(selected_city_data['median_superhost_price_delta']))}",
     )
 
-    # Add any additional charts or elements here if needed
+    st.markdown("**Listing Prices by Room Type**")
+    st.altair_chart(
+        pricing_charts.chart_mean_room_type_prices(conn.session, selected_city),
+        use_container_width=True,
+    )
+
+    st.markdown("**Listing Prices by Neighborhood**")
+    st.altair_chart(
+        pricing_charts.chart_median_neighborhood_prices(conn.session, selected_city),
+        use_container_width=True,
+    )
 
 
 with reviews_tab:
@@ -134,24 +153,24 @@ with reviews_tab:
 
     col1.metric(
         "Median Review Count",
-        f"{selected_city_data['median_review_count']}",
-        delta=f"{selected_city_data['median_review_count_delta']}",
+        f"{round(selected_city_data['median_review_count'])}",
+        delta=f"{round(selected_city_data['median_review_count_delta'])}",
     )
 
     col2.metric(
         "Mean Reviews Score",
-        f"{selected_city_data['mean_reviews_score']}/5",
-        delta=f"{selected_city_data['mean_reviews_score_delta']}",
+        f"{selected_city_data['mean_reviews_score']:.2f}/5",
+        delta=f"{selected_city_data['mean_reviews_score_delta']:.2f}",
     )
 
     col3.metric(
         "Mean Superhost Reviews Score",
-        f"{selected_city_data['mean_superhost_reviews_score']}/5",
-        delta=f"{selected_city_data['mean_superhost_reviews_score_delta']}",
+        f"{selected_city_data['mean_superhost_reviews_score']:.2f}/5",
+        delta=f"{selected_city_data['mean_superhost_reviews_score_delta']:.2f}",
     )
 
     col4.metric(
         "Superhost Percent",
-        f"{selected_city_data['superhost_percent']}%",
-        delta=f"{selected_city_data['superhost_percent_delta']}%",
+        f"{round(selected_city_data['superhost_percent'])}%",
+        delta=f"{round(selected_city_data['superhost_percent_delta'])}%",
     )

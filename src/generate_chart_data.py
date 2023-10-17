@@ -1,15 +1,23 @@
 import json
+import os  # Import the os module to use file deletion function
 
-import altair as alt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import constants
 from charts.overview_charts import *
+from charts.pricing_charts import *
+from charts.reviews_charts import *
 
-alt.data_transformers.enable("vegafusion")
 
-if __name__ == "__main__":
+def main(charts):
+    # File path to the JSON file
+    file_path = "data/charts_data.json"
+
+    # Checking if the file exists, and if it does, deleting it
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
     DATABASE_URI = "sqlite:///" + constants.DATABASE_PATH
 
     engine = create_engine(
@@ -23,25 +31,31 @@ if __name__ == "__main__":
     cities = constants.CITIES
 
     charts_data_values = {}
-    for city in cities:
-        chart = chart_active_listings_hosts_age(session, city)
+    for chart_func in charts:
+        for city in cities:
+            chart = chart_func(session, city)
 
-        if chart is not None:
-            chart_dict = chart.to_dict(format="vega")
-            # Extracting the ["data"][0]["values"]
-            chart_data_values = chart_dict.get("data", [{}])[0].get("values", {})
-            charts_data_values[
-                f"chart_active_listings_hosts_age_{city}"
-            ] = chart_data_values
-        else:
-            print(
-                f"No chart generated for city: {city}"
-            )  # Logging which city didn’t generate a chart
-            # You could also save a placeholder or message instead of the chart
-            charts_data_values[
-                f"chart_active_listings_hosts_age_{city}"
-            ] = "No data available"
+            chart_func_name = chart_func.__name__
+            if chart is not None:
+                chart_dict = chart.to_dict(format="vega")
+                # Extracting the ["data"][0]["values"]
+                chart_data_values = chart_dict.get("data", [{}])[0].get("values", {})
+                charts_data_values[f"{chart_func_name}_{city}"] = chart_data_values
+            else:
+                print(f"No chart generated for city: {city}")
+                charts_data_values[f"{chart_func_name}_{city}"] = None
 
     # Saving all chart data values to a JSON file
-    with open("data/charts_data.json", "w") as file:
+    with open(file_path, "w") as file:
         json.dump(charts_data_values, file)
+
+
+if __name__ == "__main__":
+    charts = [
+        chart_active_listings_hosts_age,
+        chart_room_types,
+        chart_neighborhood_listings_count,
+        chart_median_neighborhood_prices,
+        chart_mean_room_type_prices,
+    ]
+    main(charts)
