@@ -1,11 +1,9 @@
 import os
 
 import constants
-import data_cleaning
-import data_reading
-import db_populating
-from amenity_processing import process_amenities
 from database.db_session import SessionLocal, init_db
+from setup import data_cleaning, data_reading, db_populating
+from setup.amenity_processing import process_amenities
 
 
 def clean_listings_df(listings_df):

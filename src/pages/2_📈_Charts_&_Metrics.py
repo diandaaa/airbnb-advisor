@@ -1,15 +1,11 @@
 import json
 
-import json
-
 import streamlit as st
 from millify import millify
 
 import utilities
 from charts import overview_charts, pricing_charts, reviews_charts
-from charts import overview_charts, pricing_charts
 from constants import CITIES
-from metrics import overview_metrics, pricing_metrics, reviews_metrics
 
 # Load metrics data from the JSON file
 with open("data/metrics.json", "r") as file:
@@ -19,11 +15,6 @@ with open("data/metrics.json", "r") as file:
 # Function to determine the prefix
 def get_prefix(value):
     return "-" if value < 0 else ""
-
-
-# Load metrics data from the JSON file
-with open("data/metrics.json", "r") as file:
-    metrics_data = json.load(file)
 
 
 # Configure the page
@@ -65,10 +56,6 @@ st.session_state.selected_city = st.selectbox(
 selected_city = st.session_state.selected_city
 selected_city_data = metrics_data.get(selected_city, metrics_data["All Cities"])
 
-
-selected_city = st.session_state.selected_city
-selected_city_data = metrics_data.get(selected_city, metrics_data["All Cities"])
-
 overview_tab, pricing_tab, reviews_tab = st.tabs(["Overview", "Pricing", "Reviews"])
 
 with overview_tab:
@@ -80,24 +67,16 @@ with overview_tab:
         "Active Listings",
         millify(selected_city_data["active_listings"]),
         delta=millify(selected_city_data["active_listings_delta"]),
-        millify(selected_city_data["active_listings"]),
-        delta=millify(selected_city_data["active_listings_delta"]),
     )
-
 
     col2.metric(
         "Active Hosts",
         millify(selected_city_data["active_hosts"]),
         delta=millify(selected_city_data["active_hosts_delta"]),
-        millify(selected_city_data["active_hosts"]),
-        delta=millify(selected_city_data["active_hosts_delta"]),
     )
-
 
     col3.metric(
         "Median Review Score",
-        f"{selected_city_data['median_review_score']}/5",
-        delta=round(selected_city_data["median_review_score_delta"], 2),
         f"{selected_city_data['median_review_score']}/5",
         delta=round(selected_city_data["median_review_score_delta"], 2),
     )
@@ -105,20 +84,15 @@ with overview_tab:
     # Applying prefix logic for the overview metrics
     prefix_overview = get_prefix(selected_city_data["median_price"])
     formatted_delta = f"{prefix_overview}${millify(int(abs(selected_city_data['median_price_delta'])))}"
-    prefix_overview = get_prefix(selected_city_data["median_price"])
-    formatted_delta = f"{prefix_overview}${millify(int(abs(selected_city_data['median_price_delta'])))}"
 
     col4.metric(
         "Median Nightly Price",
-        f"${int(selected_city_data['median_price'])}",
         f"${int(selected_city_data['median_price'])}",
         delta=formatted_delta,
     )
 
     st.altair_chart(
-        overview_charts.chart_active_listings_hosts_age(
-            conn.session, st.session_state.selected_city
-        ),
+        overview_charts.chart_active_listings_hosts_age(conn.session, selected_city),
         use_container_width=True,
     )
 

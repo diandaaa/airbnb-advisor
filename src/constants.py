@@ -48,13 +48,13 @@ AIRBNB_COLORS = {
     "lightgrey": "#767676",  # Foggy
 }
 
-BENS_COLORS = {
-    "nature-green": "#236F21",
-    "rose": "#ED217C",
-    "space-cadet": "#2D3047",
-    "pale-dogwood": "#FFFD82",
-    "atomic-tangerine": "#FF9B71",
-}
+COLORS = [
+    "#236F21",  # Green
+    "#ED217C",  # Magenta
+    "#2D3047",  # Dark Blue
+    "#FFFD82",  # Yellow
+    "#FF9B71",  # Orange
+]
 
 # Mapping official Airbnb categories
 AMENITY_CATEGORIES = {

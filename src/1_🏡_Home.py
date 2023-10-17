@@ -5,7 +5,7 @@ from millify import millify
 from sqlalchemy import func
 
 import utilities
-from constants import BENS_COLORS as COLORS
+from constants import COLORS
 from database.models import Amenities, Cities, ListingsCore, Neighborhoods
 
 # Configure the page -----------------------------------------------------------
@@ -68,7 +68,7 @@ listings_city_counts_chart = (
     alt.Chart(listings_city_counts, title="Listings by City")
     .mark_bar(
         opacity=0.7,
-        color=COLORS["nature-green"],
+        color=COLORS[0],
     )
     .encode(
         x=alt.X("Count", sort="-x", axis=alt.Axis(title=None)),

@@ -1,7 +1,7 @@
 import altair as alt
 import pandas as pd
 
-from constants import BENS_COLORS
+from constants import COLORS
 from database.models import Cities, ListingsCore, Neighborhoods, RoomTypes
 
 
@@ -28,7 +28,7 @@ def chart_price_dist_by_room_type(session, city):
     data = data[data["price"] < p99]
 
     # Picking the first four colors from BENS_COLORS
-    colors_to_use = list(BENS_COLORS.values())[:4]
+    colors_to_use = list(COLORS.values())[:4]
 
     # Creating an Altair chart
     chart = (

@@ -35,7 +35,16 @@ def median_review_count(session, city):
     # Get list of review counts and find the median
     review_counts = [r[0] for r in query.all()]
     sorted_counts = sorted(review_counts)
-    median_count = sorted_counts[len(sorted_counts) // 2]
+
+    if not sorted_counts:
+        return None  # or you might want to return a different value or raise an error
+
+    # Calculate the median
+    mid_idx = len(sorted_counts) // 2
+    if len(sorted_counts) % 2 == 0:
+        median_count = (sorted_counts[mid_idx - 1] + sorted_counts[mid_idx]) / 2
+    else:
+        median_count = sorted_counts[mid_idx]
 
     return median_count
 
@@ -262,12 +271,16 @@ def median_review_count_delta(session, city):
     len_counts = len(sorted_counts)
 
     if len_counts == 0:
-        prior_median_count = 0
+        prior_median_count = None
     elif len_counts % 2 == 0:
         prior_median_count = (
             sorted_counts[len_counts // 2 - 1] + sorted_counts[len_counts // 2]
         ) / 2
     else:
         prior_median_count = sorted_counts[len_counts // 2]
+
+    # Check if either median is None and return None if so
+    if current_median is None or prior_median_count is None:
+        return None
 
     return current_median - prior_median_count

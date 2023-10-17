@@ -1,4 +1,14 @@
 import base64
+import json
+
+
+def load_chart_data_from_file(chart_name):
+    try:
+        with open("data/charts_data.json", "r") as file:
+            charts_data_values = json.load(file)
+            return charts_data_values.get(chart_name, None)
+    except FileNotFoundError:
+        return None
 
 
 def get_image_with_encoding(image_path):
