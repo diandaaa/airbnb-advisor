@@ -23,9 +23,10 @@ st.set_page_config(
 st.sidebar.text("")
 st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
-if st.sidebar.button("🌐 benharman.dev"):
-    webbrowser.open_new_tab("http://benharman.dev")
-
+if st.sidebar.button("🧪 Source Code"):
+    webbrowser.open_new_tab("https://github.com/benharmandev/airbnb-advisor")
+if st.sidebar.button("🌐 BenHarman.dev"):
+    webbrowser.open_new_tab("https://benharman.dev")
 
 # Establish a connection to the SQLite database
 conn = st.experimental_connection(

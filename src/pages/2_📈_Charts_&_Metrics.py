@@ -1,9 +1,9 @@
 import json
+import webbrowser
 
 import streamlit as st
 from millify import millify
 
-import utilities
 from charts import overview_charts, pricing_charts, reviews_charts
 from constants import CITIES
 
@@ -31,39 +31,10 @@ st.set_page_config(
 st.sidebar.text("")
 st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
-st.sidebar.markdown("Visit my [website](https://benharman.dev/) for more!")
-st.sidebar.text("")
-st.sidebar.markdown(
-    """
-    <style>
-        .email-icon:hover {
-            content: url(data:image/png;base64,{utilities.get_image_with_encoding('assets/mail-send-fill-black.png')});
-        }
-        
-        .github-icon:hover {
-            content: url(data:image/png;base64,{utilities.get_image_with_encoding('assets/github-black.png')});
-        }
-        
-        .email-text {
-            color: #236F21;
-        }
-        
-        .email-text:hover {
-            color: black;
-        }
-    </style>
-    <a href="https://github.com/benharmandev">
-        <img src="data:image/png;base64,{utilities.get_image_with_encoding('assets/github-green.png')}" class="github-icon">
-    </a> 
-    &nbsp;&nbsp;&nbsp; 
-    <a href="mailto:your_email@example.com" style="text-decoration: none;">
-        <img src="data:image/png;base64,{utilities.get_image_with_encoding('assets/mail-send-fill.png')}" class="email-icon">
-        <span class="email-text">your_email@example.com</span>
-    </a>
-    """,
-    unsafe_allow_html=True,
-)
-
+if st.sidebar.button("🧪 Source Code"):
+    webbrowser.open_new_tab("https://github.com/benharmandev/airbnb-advisor")
+if st.sidebar.button("🌐 BenHarman.dev"):
+    webbrowser.open_new_tab("https://benharman.dev")
 
 # Establish a connection to the SQLite database
 conn = st.experimental_connection(
