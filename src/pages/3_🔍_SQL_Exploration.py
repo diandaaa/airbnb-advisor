@@ -30,14 +30,27 @@ conn = st.experimental_connection("listings_sqlite", type="sql")
 st.title("🔍 SQL Exploration")
 
 
-if st.button("Refresh Data"):
+def refresh_data():
     for query_info in queries:
-        try:
-            result = conn.query(query_info["query"])
-            value = result.iloc[0, 0] if not result.empty else "No result"
-            query_info["text"] = query_info["text"].format(value=value)
-        except Exception as e:
-            query_info["text"] = f"Error: {e}"
+        # Use the value from JSON if it exists, otherwise execute the query
+        if "value" in query_info:
+            value = query_info["value"]
+        else:
+            try:
+                result = conn.query(query_info["query"])
+                value = result.iloc[0, 0] if not result.empty else "No result"
+            except Exception as e:
+                value = f"Error: {e}"
+
+        # Format the text with the retrieved or given value
+        query_info["text"] = query_info["text"].format(value=value)
+
+
+refresh_data()
+
+
+if st.button("Refresh Data"):
+    refresh_data()
 
 for query_info in queries:
     with st.container():

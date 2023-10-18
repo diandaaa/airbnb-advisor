@@ -1,7 +1,50 @@
 [
     {
         "id": 1,
-        "text": "The neighborhood with the highest median price is {value}.",
-        "query": "SELECT n.neighborhood \nFROM (SELECT neighborhood_id, AVG(price) as median_price \n      FROM (SELECT neighborhood_id, price, ROW_NUMBER() OVER (PARTITION BY neighborhood_id ORDER BY price) as rn, \n            COUNT(*) OVER (PARTITION BY neighborhood_id) as cnt \n            FROM ListingsCore) \n      WHERE rn in (cnt/2, cnt/2 + 1, (cnt+1)/2) \n      GROUP BY neighborhood_id) as medians \nJOIN Neighborhoods n ON medians.neighborhood_id = n.neighborhood_id \nORDER BY median_price DESC \nLIMIT 1;"
+        "text": "The neighborhood with the highest median price is **{value}**.",
+        "query": "SELECT n.neighborhood \nFROM (SELECT neighborhood_id, AVG(price) as median_price \n      FROM (SELECT neighborhood_id, price, ROW_NUMBER() OVER (PARTITION BY neighborhood_id ORDER BY price) as rn, \n            COUNT(*) OVER (PARTITION BY neighborhood_id) as cnt \n            FROM ListingsCore) \n      WHERE rn in (cnt/2, cnt/2 + 1, (cnt+1)/2) \n      GROUP BY neighborhood_id) as medians \nJOIN Neighborhoods n ON medians.neighborhood_id = n.neighborhood_id \nORDER BY median_price DESC \nLIMIT 1;",
+        "value": "Bel-Air"
+    },
+    {
+        "id": 2,
+        "text": "The zip code with the most amenities per listing is **{value}**.",
+        "query": "SELECT n.neighborhood \nFROM (SELECT lc.neighborhood_id, COUNT(la.amenity_id) as amenity_count, COUNT(lc.listing_id) as listing_count \n      FROM ListingsCore lc \n      JOIN ListingsAmenities la ON lc.listing_id = la.listing_id \n      GROUP BY lc.neighborhood_id) as amenities \nJOIN Neighborhoods n ON amenities.neighborhood_id = n.neighborhood_id \nORDER BY (amenities.amenity_count / amenities.listing_count) DESC \nLIMIT 1;",
+        "value": "28806"
+    },
+    {
+        "id": 3,
+        "text": "The most competitive price range in San Francisco is **{value}**.",
+        "query": "SELECT price_range, COUNT(*) as num_listings \nFROM (\n    SELECT CASE \n                   WHEN price < 100 THEN '$0-100' \n                   WHEN price BETWEEN 100 AND 200 THEN '$100-200' \n                   WHEN price BETWEEN 200 AND 300 THEN '$200-300' \n                   WHEN price BETWEEN 300 AND 500 THEN '$300-500' \n                   ELSE '$500+' END as price_range \n          FROM ListingsCore lc \n          JOIN Cities c ON lc.city_id = c.city_id\n          WHERE c.city = 'San Francisco') \nGROUP BY price_range \nORDER BY num_listings DESC \nLIMIT 1;",
+        "value": "$100-200"
+    },
+    {
+        "id": 4,
+        "text": "The optimal number of minimum nights in Chicago neighborhoods is **{value}**.",
+        "query": "SELECT minimum_nights, COUNT(*) as listing_count \nFROM ListingsCore lc \nJOIN Neighborhoods n ON lc.neighborhood_id = n.neighborhood_id \nJOIN Cities c ON n.city_id = c.city_id \nWHERE c.city = 'Chicago' \nGROUP BY minimum_nights \nORDER BY listing_count DESC \nLIMIT 1;",
+        "value": 2
+    },
+    {
+        "id": 5,
+        "text": "The most impactful amenity on price for private Room listings in the Fort Lauderdale neighborhood is a **{value}**.",
+        "query": "SELECT a.amenity, AVG(lc.price) as average_price \nFROM ListingsAmenities la \nJOIN Amenities a ON la.amenity_id = a.amenity_id \nJOIN ListingsCore lc ON la.listing_id = lc.listing_id \nJOIN RoomTypes rt ON lc.room_type_id = rt.room_type_id \nJOIN Neighborhoods n ON lc.neighborhood_id = n.neighborhood_id \nWHERE n.neighborhood = 'Fort Lauderdale' AND rt.room_type = 'Private room' \nGROUP BY a.amenity \nORDER BY average_price DESC \nLIMIT 1;",
+        "value": "Hot tub"
+    },
+    {
+        "id": 6,
+        "text": "The average price difference between listings with and without a Coffee Maker in Los Angeles is **${value:.2f}**.",
+        "query": "SELECT \n    AVG(CASE WHEN a.amenity IS NOT NULL THEN lc.price END) -\n    AVG(CASE WHEN a.amenity IS NULL THEN lc.price END) as avg_price_diff\nFROM \n    ListingsCore lc\nJOIN \n    Cities c ON lc.city_id = c.city_id\nLEFT JOIN \n    ListingsAmenities la ON lc.listing_id = la.listing_id\nLEFT JOIN \n    Amenities a ON la.amenity_id = a.amenity_id AND a.amenity = 'Coffee maker'\nWHERE \n    c.city = 'Los Angeles';",
+        "value": 8.30
+    },
+    {
+        "id": 7,
+        "text": "The 90th percentile price of listings in Austin is **${value}**.",
+        "query": "SELECT price\nFROM (\n    SELECT price,\n           PERCENT_RANK() OVER (ORDER BY price) as percentile\n    FROM ListingsCore lc\n    JOIN Cities c ON lc.city_id = c.city_id\n    WHERE c.city = 'Austin'\n) subquery\nWHERE percentile >= 0.9\nORDER BY price\nLIMIT 1;",
+        "value": 592
+    },
+    {
+        "id": 7,
+        "text": "The difference in median reviews between Superhosts and Non-Superhosts in the \\$500+ price range is **{value}**.",
+        "query": "WITH SuperhostData AS (\n    SELECT number_of_reviews\n    FROM ListingsReviewsSummary lrs\n    JOIN ListingsCore lc ON lrs.listing_id = lc.listing_id\n    JOIN Hosts h ON lc.host_id = h.host_id\n    WHERE lc.price > 500 AND h.host_is_superhost = 1\n    ORDER BY number_of_reviews\n),\nNonSuperhostData AS (\n    SELECT number_of_reviews\n    FROM ListingsReviewsSummary lrs\n    JOIN ListingsCore lc ON lrs.listing_id = lc.listing_id\n    JOIN Hosts h ON lc.host_id = h.host_id\n    WHERE lc.price > 500 AND h.host_is_superhost = 0\n    ORDER BY number_of_reviews\n)\nSELECT \n    (SELECT MAX(number_of_reviews) FROM (SELECT number_of_reviews FROM SuperhostData LIMIT 1 OFFSET (SELECT COUNT(*) FROM SuperhostData)/2 - 1)) -\n    (SELECT MAX(number_of_reviews) FROM (SELECT number_of_reviews FROM NonSuperhostData LIMIT 1 OFFSET (SELECT COUNT(*) FROM NonSuperhostData)/2 - 1)) \n    as median_difference",
+        "value": 14
     }
 ]
