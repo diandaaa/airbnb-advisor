@@ -260,19 +260,19 @@
             "steps": [
                 {
                     "step": 1,
-                    "description": "CTEs 'SuperhostData' and 'NonSuperhostData' are used. These CTEs streamline the main query by segmenting the data into two logical sets: reviews from Superhosts and reviews from Non-Superhosts."
+                    "description": "Using Common Table Expressions (CTEs), two temporary result sets, 'SuperhostData' and 'NonSuperhostData', are created. They hold the number_of_reviews for listings priced over $500, separately for Superhosts and Non-Superhosts."
                 },
                 {
                     "step": 2,
-                    "description": "Data is joined across multiple tables ('ListingsReviewsSummary', 'ListingsCore', 'Hosts') to get a unified view that contains all necessary attributes like number_of_reviews, price, and host type."
+                    "description": "For both CTEs, data is selected from a joined dataset comprising of 'ListingsReviewsSummary', 'ListingsCore', and 'Hosts'. Appropriate conditions, such as price being over $500 and whether the host is a Superhost or not, are applied."
                 },
                 {
                     "step": 3,
-                    "description": "In the main query, subqueries calculate the median number of reviews for each group (Superhost and Non-Superhost). This is done by ordering the review numbers, applying an OFFSET, and then fetching the middle value."
+                    "description": "Subqueries are used in the SELECT statement to calculate the median of number_of_reviews separately for SuperhostData and NonSuperhostData. This involves ordering the data, applying an OFFSET to get the middle value and using MAX to select it."
                 },
                 {
                     "step": 4,
-                    "description": "The calculated medians are then subtracted from one another to find the median difference, which shows the relative performance of Superhosts against Non-Superhosts in the $500+ price range."
+                    "description": "The difference between the medians calculated in the previous step is computed and returned as 'median_difference'."
                 }
             ],
             "notes": {
