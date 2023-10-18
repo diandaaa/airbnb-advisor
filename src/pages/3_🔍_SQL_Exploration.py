@@ -46,6 +46,30 @@ def refresh_data():
         query_info["text"] = query_info["text"].format(value=value)
 
 
+def display_query_info(query_info):
+    with st.container():
+        # Display the main text
+        st.markdown(query_info["text"])
+        st.code(query_info["query"])
+
+        # Expander for the logic
+        with st.expander("💡 See logical explanation of steps", expanded=False):
+            # Displaying each step in the logic
+            for step in query_info["logic"]["steps"]:
+                st.markdown(f"**Step {step['step']}:** {step['description']}")
+
+            # Displaying notes
+            st.markdown("**Notes:**")
+            for note_title, note_description in query_info["logic"]["notes"].items():
+                # Removing underscores and capitalizing each word in the title
+                note_title_formatted = " ".join(
+                    word.capitalize() for word in note_title.replace("_", " ").split()
+                )
+                st.markdown(f"- **{note_title_formatted}:** {note_description}")
+
+        st.text("")
+
+
 refresh_data()
 
 
@@ -53,6 +77,4 @@ if st.button("Refresh Data"):
     refresh_data()
 
 for query_info in queries:
-    with st.container():
-        st.markdown(query_info["text"])
-        st.code(query_info["query"], language="sql")
+    display_query_info(query_info)

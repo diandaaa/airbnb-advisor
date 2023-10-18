@@ -3,48 +3,282 @@
         "id": 1,
         "text": "The neighborhood with the highest median price is **{value}**.",
         "query": "SELECT n.neighborhood \nFROM (SELECT neighborhood_id, AVG(price) as median_price \n      FROM (SELECT neighborhood_id, price, ROW_NUMBER() OVER (PARTITION BY neighborhood_id ORDER BY price) as rn, \n            COUNT(*) OVER (PARTITION BY neighborhood_id) as cnt \n            FROM ListingsCore) \n      WHERE rn in (cnt/2, cnt/2 + 1, (cnt+1)/2) \n      GROUP BY neighborhood_id) as medians \nJOIN Neighborhoods n ON medians.neighborhood_id = n.neighborhood_id \nORDER BY median_price DESC \nLIMIT 1;",
-        "value": "Bel-Air"
+        "value": "Bel-Air",
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "In the innermost subquery, for each listing in 'ListingsCore', ROW_NUMBER() and COUNT() window functions are used. ROW_NUMBER() assigns a unique row number to each listing within each neighborhood, ordered by price. COUNT() gives the total number of listings in each neighborhood."
+                },
+                {
+                    "step": 2,
+                    "description": "Filter the results of the innermost subquery to keep only the middle value(s) for each neighborhood, which represent(s) the median price(s). This is accomplished by keeping rows where the row number (rn) is in the middle of the count (cnt)."
+                },
+                {
+                    "step": 3,
+                    "description": "In the outer subquery named 'medians', calculate the average price of the remaining rows for each neighborhood, which effectively gives the median price due to the previous filtering."
+                },
+                {
+                    "step": 4,
+                    "description": "Join the 'medians' subquery with the 'Neighborhoods' table to map the neighborhood_id to an actual neighborhood name."
+                },
+                {
+                    "step": 5,
+                    "description": "Order the results by median price in descending order and limit the output to the first row to get the neighborhood with the highest median price."
+                }
+            ],
+            "notes": {
+                "conditionals": "The use of conditional logic within the WHERE clause of the subquery, considering rows where rn is in the middle of cnt, demonstrates a sophisticated approach to calculating the median.",
+                "window_functions": "Window functions ROW_NUMBER() and COUNT() were used for assigning row numbers and counting the number of listings within each neighborhood.",
+                "subqueries": "Multiple nested subqueries were used to progressively filter and aggregate the data."
+            }
+        }
     },
     {
         "id": 2,
         "text": "The zip code with the most amenities per listing is **{value}**.",
         "query": "SELECT n.neighborhood \nFROM (SELECT lc.neighborhood_id, COUNT(la.amenity_id) as amenity_count, COUNT(lc.listing_id) as listing_count \n      FROM ListingsCore lc \n      JOIN ListingsAmenities la ON lc.listing_id = la.listing_id \n      GROUP BY lc.neighborhood_id) as amenities \nJOIN Neighborhoods n ON amenities.neighborhood_id = n.neighborhood_id \nORDER BY (amenities.amenity_count / amenities.listing_count) DESC \nLIMIT 1;",
-        "value": "28806"
+        "value": "28806",
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "Join the 'ListingsCore' (lc) and 'ListingsAmenities' (la) tables on the listing_id. This step is necessary to associate each listing with its amenities."
+                },
+                {
+                    "step": 2,
+                    "description": "Group the results by neighborhood_id to prepare for counting amenities and listings per neighborhood."
+                },
+                {
+                    "step": 3,
+                    "description": "For each neighborhood, count the total number of amenities (amenity_count) and listings (listing_count)."
+                },
+                {
+                    "step": 4,
+                    "description": "Create a subquery named 'amenities' that holds the neighborhood_id along with its corresponding amenity_count and listing_count."
+                },
+                {
+                    "step": 5,
+                    "description": "Join the 'amenities' subquery with the 'Neighborhoods' table to map the neighborhood_id to an actual neighborhood name."
+                },
+                {
+                    "step": 6,
+                    "description": "Order the results by the average number of amenities per listing (amenity_count / listing_count) in descending order to find the neighborhood with the most amenities per listing."
+                },
+                {
+                    "step": 7,
+                    "description": "Limit the output to the first row to get the neighborhood (or zip code) with the most amenities per listing."
+                }
+            ],
+            "notes": {
+                "joins": "Joins were used to combine necessary data from 'ListingsCore', 'ListingsAmenities', and 'Neighborhoods'.",
+                "group_by": "Grouping by neighborhood_id was essential for aggregating data at the neighborhood level.",
+                "order_by": "Ordering was crucial for sorting neighborhoods based on the calculated average amenities per listing."
+            }
+        }
     },
     {
         "id": 3,
         "text": "The most competitive price range in San Francisco is **{value}**.",
         "query": "SELECT price_range, COUNT(*) as num_listings \nFROM (\n    SELECT CASE \n                   WHEN price < 100 THEN '$0-100' \n                   WHEN price BETWEEN 100 AND 200 THEN '$100-200' \n                   WHEN price BETWEEN 200 AND 300 THEN '$200-300' \n                   WHEN price BETWEEN 300 AND 500 THEN '$300-500' \n                   ELSE '$500+' END as price_range \n          FROM ListingsCore lc \n          JOIN Cities c ON lc.city_id = c.city_id\n          WHERE c.city = 'San Francisco') \nGROUP BY price_range \nORDER BY num_listings DESC \nLIMIT 1;",
-        "value": "$100-200"
+        "value": "$100-200",
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "The subquery assigns each listing in 'ListingsCore' a 'price_range' based on its price. This is done using the CASE statement which categorizes each listing into a specific price range."
+                },
+                {
+                    "step": 2,
+                    "description": "The subquery also involves a join with the 'Cities' table to ensure that only listings from San Francisco are considered, as filtered by the WHERE clause."
+                },
+                {
+                    "step": 3,
+                    "description": "Outside the subquery, the results are grouped by 'price_range', and the total number of listings in each price range is counted and named 'num_listings'."
+                },
+                {
+                    "step": 4,
+                    "description": "The grouped results are then ordered by 'num_listings' in descending order, meaning the price range with the most listings will be at the top."
+                },
+                {
+                    "step": 5,
+                    "description": "Finally, LIMIT 1 is applied to select only the top row, which corresponds to the most competitive price range in San Francisco."
+                }
+            ],
+            "notes": {
+                "case_statement": "The CASE statement is used within the subquery to categorize listings into specific price ranges.",
+                "joins": "A join is performed with the 'Cities' table to focus on listings in San Francisco.",
+                "subqueries": "A subquery is used to create categorized price ranges and filter listings by city before performing aggregation in the outer query."
+            }
+        }
     },
     {
         "id": 4,
         "text": "The optimal number of minimum nights in Chicago neighborhoods is **{value}**.",
         "query": "SELECT minimum_nights, COUNT(*) as listing_count \nFROM ListingsCore lc \nJOIN Neighborhoods n ON lc.neighborhood_id = n.neighborhood_id \nJOIN Cities c ON n.city_id = c.city_id \nWHERE c.city = 'Chicago' \nGROUP BY minimum_nights \nORDER BY listing_count DESC \nLIMIT 1;",
-        "value": 2
+        "value": 2,
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "Joining three tables: 'ListingsCore' with 'Neighborhoods', and then with 'Cities'. This way, the neighborhood and city information for each listing in 'ListingsCore' is made available in the resulting dataset."
+                },
+                {
+                    "step": 2,
+                    "description": "Filtering the results from the joined tables to keep only the rows where the city is Chicago. This narrows down the data to the listings located in Chicago."
+                },
+                {
+                    "step": 3,
+                    "description": "Grouping the filtered results by the 'minimum_nights' column, which will allow for aggregation in the next step. Each group represents listings that have the same minimum nights requirement."
+                },
+                {
+                    "step": 4,
+                    "description": "Counting the number of listings in each group. This aggregation results in two columns: 'minimum_nights' and 'listing_count'."
+                },
+                {
+                    "step": 5,
+                    "description": "Ordering the grouped and aggregated data by 'listing_count' in descending order. This sorts the different 'minimum_nights' values by the popularity or frequency among listings."
+                },
+                {
+                    "step": 6,
+                    "description": "Limiting the output to the first row, which represents the 'minimum_nights' value that is most common among Chicago listings."
+                }
+            ],
+            "notes": {
+                "joins": "Multiple joins are used to combine data from the 'ListingsCore', 'Neighborhoods', and 'Cities' tables.",
+                "aggregations": "COUNT() is used to aggregate the data by counting the number of listings for each unique 'minimum_nights' value.",
+                "filters": "The query is filtered to include only listings in Chicago.",
+                "ordering_limiting": "Results are ordered and limited to identify the most common 'minimum_nights' value."
+            }
+        }
     },
     {
         "id": 5,
         "text": "The most impactful amenity on price for private Room listings in the Fort Lauderdale neighborhood is a **{value}**.",
         "query": "SELECT a.amenity, AVG(lc.price) as average_price \nFROM ListingsAmenities la \nJOIN Amenities a ON la.amenity_id = a.amenity_id \nJOIN ListingsCore lc ON la.listing_id = lc.listing_id \nJOIN RoomTypes rt ON lc.room_type_id = rt.room_type_id \nJOIN Neighborhoods n ON lc.neighborhood_id = n.neighborhood_id \nWHERE n.neighborhood = 'Fort Lauderdale' AND rt.room_type = 'Private room' \nGROUP BY a.amenity \nORDER BY average_price DESC \nLIMIT 1;",
-        "value": "Hot tub"
+        "value": "Hot tub",
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "Perform a series of JOIN operations to combine relevant information from the 'ListingsAmenities', 'Amenities', 'ListingsCore', 'RoomTypes', and 'Neighborhoods' tables. This setup aims to consolidate all necessary details such as amenities, listing prices, room types, and neighborhoods into a single derived table."
+                },
+                {
+                    "step": 2,
+                    "description": "Apply a WHERE clause to filter the consolidated data further. It retains only the rows that correspond to listings located in the 'Fort Lauderdale' neighborhood and have the room type labeled as 'Private room'."
+                },
+                {
+                    "step": 3,
+                    "description": "Execute a GROUP BY statement in conjunction with the AVG function. This operation groups the data by each unique amenity, calculating the average listing price for each group. The outcome gives a sense of how much impact each amenity has on the listing price on average."
+                },
+                {
+                    "step": 4,
+                    "description": "Order the grouped results by 'average_price' in descending order. This ordering prioritizes amenities that, on average, are associated with higher listing prices, making it easier to identify the most impactful amenity."
+                },
+                {
+                    "step": 5,
+                    "description": "Utilize the LIMIT clause to narrow down the result set to only the top row. This limitation ensures that only the amenity associated with the highest average listing price is returned, meeting the requirement to identify the single most impactful amenity."
+                }
+            ],
+            "notes": {
+                "joins": "Multiple JOIN operations are used to consolidate necessary data from various tables into a unified view for analysis.",
+                "aggregations": "Aggregation functions like AVG are employed to summarize and analyze the grouped data effectively.",
+                "filtering": "Filtering operations such as WHERE and LIMIT are utilized to refine the result set based on specific criteria and requirements."
+            }
+        }
     },
     {
         "id": 6,
         "text": "The average price difference between listings with and without a Coffee Maker in Los Angeles is **${value:.2f}**.",
         "query": "SELECT \n    AVG(CASE WHEN a.amenity IS NOT NULL THEN lc.price END) -\n    AVG(CASE WHEN a.amenity IS NULL THEN lc.price END) as avg_price_diff\nFROM \n    ListingsCore lc\nJOIN \n    Cities c ON lc.city_id = c.city_id\nLEFT JOIN \n    ListingsAmenities la ON lc.listing_id = la.listing_id\nLEFT JOIN \n    Amenities a ON la.amenity_id = a.amenity_id AND a.amenity = 'Coffee maker'\nWHERE \n    c.city = 'Los Angeles';",
-        "value": 8.30
+        "value": 8.30,
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "The base table, 'ListingsCore' (lc), is joined with the 'Cities' table to filter listings based on the city. An INNER JOIN is used, meaning only listings that match a city in the 'Cities' table will be included."
+                },
+                {
+                    "step": 2,
+                    "description": "A LEFT JOIN is performed with 'ListingsAmenities' (la) to connect listings with their amenities. Since it’s a LEFT JOIN, listings without amenities will still be included in the results."
+                },
+                {
+                    "step": 3,
+                    "description": "Another LEFT JOIN is executed with the 'Amenities' table to fetch the amenity names. A specific condition is added in this join to only consider the amenity 'Coffee maker'."
+                },
+                {
+                    "step": 4,
+                    "description": "A WHERE clause filters the results further to only include listings in 'Los Angeles'."
+                },
+                {
+                    "step": 5,
+                    "description": "The SELECT statement calculates the average price difference using two AVG functions. The CASE statements inside the AVG functions differentiate listings with and without a Coffee Maker. The difference between these two averages gives the desired price difference."
+                }
+            ],
+            "notes": {
+                "joins": "Multiple joins, including LEFT JOINs, are used to connect listings with cities and amenities.",
+                "conditional_aggregations": "Conditional aggregation is done using CASE statements within the AVG functions to separately calculate average prices based on the presence of a specific amenity."
+            }
+        }
     },
     {
         "id": 7,
         "text": "The 90th percentile price of listings in Austin is **${value}**.",
         "query": "SELECT price\nFROM (\n    SELECT price,\n           PERCENT_RANK() OVER (ORDER BY price) as percentile\n    FROM ListingsCore lc\n    JOIN Cities c ON lc.city_id = c.city_id\n    WHERE c.city = 'Austin'\n) subquery\nWHERE percentile >= 0.9\nORDER BY price\nLIMIT 1;",
-        "value": 592
+        "value": 592,
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "A subquery named 'subquery' is created. Within this subquery, the listings are joined with the cities based on city_id to focus on entries where the city is Austin."
+                },
+                {
+                    "step": 2,
+                    "description": "Inside the 'subquery', a window function PERCENT_RANK() is used. It calculates the relative rank of each listing’s price as a percentage, ordering the prices in ascending order. This assigns a percentile value to each listing’s price."
+                },
+                {
+                    "step": 3,
+                    "description": "The outer query then filters out the rows, keeping only the listings that have a percentile value of 0.9 or above, representing the 90th percentile and above."
+                },
+                {
+                    "step": 4,
+                    "description": "The results are then ordered by price in ascending order, and the first row is selected, which gives the lowest price at the 90th percentile."
+                }
+            ],
+            "notes": {
+                "window_functions": "The window function PERCENT_RANK() was used to determine the relative rank of each listing’s price as a percentage.",
+                "subqueries": "A subquery was utilized to perform the initial calculation of percentiles before filtering the results in the outer query."
+            }
+        }
     },
     {
-        "id": 7,
+        "id": 8,
         "text": "The difference in median reviews between Superhosts and Non-Superhosts in the \\$500+ price range is **{value}**.",
         "query": "WITH SuperhostData AS (\n    SELECT number_of_reviews\n    FROM ListingsReviewsSummary lrs\n    JOIN ListingsCore lc ON lrs.listing_id = lc.listing_id\n    JOIN Hosts h ON lc.host_id = h.host_id\n    WHERE lc.price > 500 AND h.host_is_superhost = 1\n    ORDER BY number_of_reviews\n),\nNonSuperhostData AS (\n    SELECT number_of_reviews\n    FROM ListingsReviewsSummary lrs\n    JOIN ListingsCore lc ON lrs.listing_id = lc.listing_id\n    JOIN Hosts h ON lc.host_id = h.host_id\n    WHERE lc.price > 500 AND h.host_is_superhost = 0\n    ORDER BY number_of_reviews\n)\nSELECT \n    (SELECT MAX(number_of_reviews) FROM (SELECT number_of_reviews FROM SuperhostData LIMIT 1 OFFSET (SELECT COUNT(*) FROM SuperhostData)/2 - 1)) -\n    (SELECT MAX(number_of_reviews) FROM (SELECT number_of_reviews FROM NonSuperhostData LIMIT 1 OFFSET (SELECT COUNT(*) FROM NonSuperhostData)/2 - 1)) \n    as median_difference",
-        "value": 14
+        "value": 14,
+        "logic": {
+            "steps": [
+                {
+                    "step": 1,
+                    "description": "CTEs 'SuperhostData' and 'NonSuperhostData' are used. These CTEs streamline the main query by segmenting the data into two logical sets: reviews from Superhosts and reviews from Non-Superhosts."
+                },
+                {
+                    "step": 2,
+                    "description": "Data is joined across multiple tables ('ListingsReviewsSummary', 'ListingsCore', 'Hosts') to get a unified view that contains all necessary attributes like number_of_reviews, price, and host type."
+                },
+                {
+                    "step": 3,
+                    "description": "In the main query, subqueries calculate the median number of reviews for each group (Superhost and Non-Superhost). This is done by ordering the review numbers, applying an OFFSET, and then fetching the middle value."
+                },
+                {
+                    "step": 4,
+                    "description": "The calculated medians are then subtracted from one another to find the median difference, which shows the relative performance of Superhosts against Non-Superhosts in the $500+ price range."
+                }
+            ],
+            "notes": {
+                "ctes": "CTEs are effectively used to modularize the query, making it more readable and maintainable.",
+                "offset": "The OFFSET technique used in conjunction with LIMIT and subqueries to calculate the median is a clever way to manage the lack of a direct MEDIAN function in some SQL dialects."
+            }
+        }
     }
 ]
