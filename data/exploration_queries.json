@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "text": "The most expensive neighborhood is {value}.",
-        "query": "SELECT ..."
+        "text": "The neighborhood with the highest median price is {value}.",
+        "query": "SELECT n.neighborhood \nFROM (SELECT neighborhood_id, AVG(price) as median_price \n      FROM (SELECT neighborhood_id, price, ROW_NUMBER() OVER (PARTITION BY neighborhood_id ORDER BY price) as rn, \n            COUNT(*) OVER (PARTITION BY neighborhood_id) as cnt \n            FROM ListingsCore) \n      WHERE rn in (cnt/2, cnt/2 + 1, (cnt+1)/2) \n      GROUP BY neighborhood_id) as medians \nJOIN Neighborhoods n ON medians.neighborhood_id = n.neighborhood_id \nORDER BY median_price DESC \nLIMIT 1;"
     }
 ]
