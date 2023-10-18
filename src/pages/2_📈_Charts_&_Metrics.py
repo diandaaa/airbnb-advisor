@@ -174,3 +174,11 @@ with reviews_tab:
         f"{round(selected_city_data['superhost_percent'])}%",
         delta=f"{round(selected_city_data['superhost_percent_delta'])}%",
     )
+
+    st.markdown("**Listings by Neighborhood**")
+    st.altair_chart(
+        reviews_charts.chart_review_scores_price_correlation(
+            conn.session, selected_city
+        ),
+        use_container_width=True,
+    )

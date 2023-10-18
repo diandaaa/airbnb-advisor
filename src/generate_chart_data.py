@@ -57,5 +57,6 @@ if __name__ == "__main__":
         chart_neighborhood_listings_count,
         chart_median_neighborhood_prices,
         chart_mean_room_type_prices,
+        chart_review_scores_price_correlation,
     ]
     main(charts)
