@@ -31,8 +31,6 @@ st.set_page_config(
 st.sidebar.text("")
 st.sidebar.text("")
 st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
-if st.sidebar.button("🧪 Source Code"):
-    webbrowser.open_new_tab("https://github.com/benharmandev/airbnb-advisor")
 if st.sidebar.button("🌐 BenHarman.dev"):
     webbrowser.open_new_tab("https://benharman.dev")
 
@@ -175,10 +173,16 @@ with reviews_tab:
         delta=f"{round(selected_city_data['superhost_percent_delta'])}%",
     )
 
-    st.markdown("**Listings by Neighborhood**")
+    st.markdown("**Review Scores to Price Correlation**")
     st.altair_chart(
         reviews_charts.chart_review_scores_price_correlation(
             conn.session, selected_city
         ),
+        use_container_width=True,
+    )
+
+    st.markdown("**Review Scores to Price Correlation**")
+    st.altair_chart(
+        reviews_charts.chart_review_scores_superhost(conn.session, selected_city),
         use_container_width=True,
     )

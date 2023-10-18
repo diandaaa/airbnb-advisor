@@ -65,42 +65,59 @@ def chart_mean_room_type_prices(session, city):
 
 
 def chart_median_neighborhood_prices(session, city):
-    print(f"Processing median price distribution by neighborhoods for city: {city}")
+    print(
+        f"Processing price distribution by room types for city: {city}"
+    )  # Logging the current city
 
-    # Construct the query
-    query = session.query(Neighborhoods.neighborhood, ListingsCore.price).join(
-        Neighborhoods, Neighborhoods.neighborhood_id == ListingsCore.neighborhood_id
-    )
+    # Construct the chart name to match the JSON key
+    chart_name = f"chart_median_neighborhood_prices_{city}"
 
-    if city != "All Cities":
-        query = query.filter(ListingsCore.city_id == Cities.city_id).filter(
-            Cities.city == city
+    # Load chart data from JSON file
+    data_values = load_chart_data_from_file(chart_name)
+
+    # If data exists in the JSON file, use it
+    if data_values:
+        source = pd.DataFrame(data_values)
+        print(f"Loaded data from JSON file for city: {city}")
+    # Otherwise, perform the database query
+    else:
+        query = session.query(Neighborhoods.neighborhood, ListingsCore.price).join(
+            Neighborhoods, Neighborhoods.neighborhood_id == ListingsCore.neighborhood_id
         )
 
-    # Execute the query and get data
-    data = query.all()
+        if city != "All Cities":
+            query = query.filter(ListingsCore.city_id == Cities.city_id).filter(
+                Cities.city == city
+            )
 
-    # Processing the data to calculate medians
-    neighborhoods = {}
-    for neighborhood, price in data:
-        if neighborhood not in neighborhoods:
-            neighborhoods[neighborhood] = []
-        neighborhoods[neighborhood].append(price)
+        # Execute the query and get data
+        data = query.all()
 
-    # Calculate median and sort by median price
-    median_prices = []
-    for neighborhood, prices in neighborhoods.items():
-        prices.sort()
-        n = len(prices)
-        median = (
-            prices[n // 2] if n % 2 != 0 else (prices[n // 2 - 1] + prices[n // 2]) / 2
+        # Processing the data to calculate medians
+        neighborhoods = {}
+        for neighborhood, price in data:
+            if neighborhood not in neighborhoods:
+                neighborhoods[neighborhood] = []
+            neighborhoods[neighborhood].append(price)
+
+        # Calculate median and sort by median price
+        median_prices = []
+        for neighborhood, prices in neighborhoods.items():
+            prices.sort()
+            n = len(prices)
+            median = (
+                prices[n // 2]
+                if n % 2 != 0
+                else (prices[n // 2 - 1] + prices[n // 2]) / 2
+            )
+            median_prices.append({"Neighborhood": neighborhood, "Median Price": median})
+
+        # Sort neighborhoods by median price in descending order
+        median_prices = sorted(
+            median_prices, key=lambda x: x["Median Price"], reverse=True
         )
-        median_prices.append({"Neighborhood": neighborhood, "Median Price": median})
 
-    # Sort neighborhoods by median price in descending order
-    median_prices = sorted(median_prices, key=lambda x: x["Median Price"], reverse=True)
-
-    source = pd.DataFrame(median_prices)
+        source = pd.DataFrame(median_prices)
 
     # Check if DataFrame is empty and log it
     if source.empty:
