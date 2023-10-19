@@ -9,7 +9,7 @@ import shapely.ops as so
 import sqlalchemy
 import streamlit as st
 
-import constants
+from constants import CITIES
 from database.models import Cities, ListingsCore
 
 # Set up streamlit page
@@ -21,6 +21,8 @@ st.set_page_config(
     menu_items=None,
 )
 
+conn = st.experimental_connection("listings_sqlite", type="sql")
+
 # Configure the sidebar
 st.sidebar.text("")
 st.sidebar.text("")
@@ -28,44 +30,20 @@ st.sidebar.markdown("Developed by Ben Harman and powered by Streamlit.")
 if st.sidebar.button("🌐 benharman.dev"):
     webbrowser.open_new_tab("https://benharman.dev")
 
+
 st.title("🗺️ Airbnb Advisor | Map")
 
-conn = st.experimental_connection("listings_sqlite", type="sql")
+# Add session state variable for city selection
+selected_city = st.selectbox("Which city would you like to explore?", CITIES)
 
+# Set the selected city to "Los Angeles" if "All Cities" is selected
+if selected_city == "All Cities":
+    selected_city = "Los Angeles"
 
-url_geojson = "https://github.com/benharmandev/airbnb-advisor/blob/main/data/usa/Cambridge/neighbourhoods.geojson"
-data_url_geojson = alt.Data(url=url_geojson, format=alt.DataFormat(property="features"))
-data_url_geojson
-map = (
-    alt.Chart(data_url_geojson)
-    .mark_geoshape()
-    .encode(color="properties.neighbourhood:N")
-)
-map
+# Update the URL to include the selected city
+geojson_url = f"https://raw.githubusercontent.com/benharmandev/airbnb-advisor/main/data/usa/{selected_city}/neighbourhoods.geojson"
 
-import json
+geojson_data = alt.Data(url=geojson_url, format=alt.DataFormat(property="features"))
 
-import geopandas as gpd
-import plotly.express as px
-import streamlit as st
-
-# # Load the GeoJSON file into a GeoDataFrame
-# geojson_file_path = "data/usa/Cambridge/neighbourhoods.geojson"
-# gdf = gpd.read_file(geojson_file_path)
-
-# # Creating the choropleth map using Plotly
-# fig = px.choropleth_mapbox(
-#     gdf,
-#     geojson=gdf.geometry,
-#     locations=gdf.index,
-#     color="neighbourhood",  # Assuming you want to color by neighbourhood
-#     hover_name="neighbourhood",
-#     mapbox_style="carto-positron",
-#     center={"lat": 42.373611, "lon": -71.109733},
-#     zoom=12,
-#     title="Neighbourhoods in Cambridge",
-# )
-
-
-# # Display the map in Streamlit
-# st.plotly_chart(fig, use_container_width=True)
+map = alt.Chart(geojson_data).mark_geoshape().encode(color="properties.neighbourhood:N")
+st.altair_chart(map, use_container_width=True, theme="streamlit")
