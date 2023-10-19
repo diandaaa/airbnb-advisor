@@ -33,6 +33,16 @@ st.title("🗺️ Airbnb Advisor | Map")
 conn = st.experimental_connection("listings_sqlite", type="sql")
 
 
+url_geojson = "https://github.com/benharmandev/airbnb-advisor/blob/main/data/usa/Asheville/neighbourhoods.geojson"
+data_url_geojson = alt.Data(url=url_geojson, format=alt.DataFormat(property="features"))
+data_url_geojson
+map = (
+    alt.Chart(data_url_geojson)
+    .mark_geoshape()
+    .encode(color="properties.neighbourhood:N")
+)
+map
+
 import json
 
 import geopandas as gpd

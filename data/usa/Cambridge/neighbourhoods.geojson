@@ -3,6 +3,10 @@
     "features": [
         {
             "type": "Feature",
+            "properties": {
+                "neighbourhood": "The Port",
+                "neighbourhood_group": null
+            },
             "geometry": {
                 "type": "MultiPolygon",
                 "coordinates": [
@@ -1123,10 +1127,6 @@
                         ]
                     ]
                 ]
-            },
-            "properties": {
-                "neighbourhood": "The Port",
-                "neighbourhood_group": null
             }
         },
         {
