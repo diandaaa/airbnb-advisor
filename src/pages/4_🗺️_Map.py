@@ -33,7 +33,7 @@ st.title("🗺️ Airbnb Advisor | Map")
 conn = st.experimental_connection("listings_sqlite", type="sql")
 
 
-url_geojson = "https://github.com/benharmandev/airbnb-advisor/blob/main/data/usa/Asheville/neighbourhoods.geojson"
+url_geojson = "https://github.com/benharmandev/airbnb-advisor/blob/main/data/usa/Cambridge/neighbourhoods.geojson"
 data_url_geojson = alt.Data(url=url_geojson, format=alt.DataFormat(property="features"))
 data_url_geojson
 map = (
