@@ -6,8 +6,17 @@
 *.pyc
 *.pyo
 
-# Original datasets
-/data/usa/
+# Ignore everything in /data/usa/
+/data/usa/*
+
+# Don't ignore the directories themselves
+!/data/usa/*/
+
+# Ignore all files in each city's directory
+/data/usa/*/*
+
+# Don't ignore neighbourhoods.geojson in each city's directory
+!/data/usa/*/neighbourhoods.geojson
 
 # Local history
 .history/

@@ -27,11 +27,7 @@ if st.sidebar.button("🌐 benharman.dev"):
     webbrowser.open_new_tab("https://benharman.dev")
 
 # Establish a connection to the SQLite database
-conn = st.experimental_connection(
-    "listings_db",
-    type="sql",
-    url="sqlite:///data/listings.sqlite",  # SQLite connection URL
-)
+conn = st.experimental_connection("listings_sqlite", type="sql")
 
 
 # Generate metrics--------------------------------------------------------------
