@@ -182,3 +182,26 @@ class ListingsAmenities(CustomBase):
     listing_amenity_id = Column(Integer, primary_key=True, autoincrement=True)
     listing_id = Column(Integer, ForeignKey("ListingsCore.listing_id"))
     amenity_id = Column(Integer, ForeignKey("Amenities.amenity_id"))
+
+
+class AmenityPriceImpacts(CustomBase):
+    __tablename__ = "AmenityPriceImpacts"
+    _table_type = "analysis"
+    _description = "Analysis table for impact of amenities on listing prices"
+
+    impact_id = Column(Integer, primary_key=True, autoincrement=True)
+    amenity_id = Column(Integer, ForeignKey("Amenities.amenity_id"))
+
+    # If the record is city-level, then this is filled, otherwise it is null
+    city_id = Column(Integer, ForeignKey("Cities.city_id"), nullable=True)
+
+    # If the record is neighborhood-level, then this is filled, otherwise it is null
+    neighborhood_id = Column(
+        Integer, ForeignKey("Neighborhoods.neighborhood_id"), nullable=True
+    )
+
+    # The median price difference of listings with the amenity compared to those without
+    median_price_difference = Column(Integer)
+
+    # Total count of listings with this amenity
+    amenity_count = Column(Integer)

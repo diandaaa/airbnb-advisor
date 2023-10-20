@@ -1,7 +1,7 @@
 import os
 
 import constants
-from database.db_session import SessionLocal, init_db
+from database.session import SessionLocal, init_db
 from setup import data_cleaning, data_reading, db_populating
 from setup.amenity_processing import process_amenities
 

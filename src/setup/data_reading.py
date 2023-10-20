@@ -1,14 +1,16 @@
 import os
+
 import pandas as pd
 
-import constants
+from constants import COLUMN_IMPORT_TYPES
+
 
 def read_and_merge_csv_files(cities):
     """Reads and merges multiple city-specific CSV files into a single DataFrame.
-    
+
     Parameters:
         cities (list): A list of city names for which data needs to be read.
-    
+
     Returns:
         pd.DataFrame: A DataFrame containing the merged data for all cities.
     """
@@ -18,7 +20,7 @@ def read_and_merge_csv_files(cities):
         if os.path.exists(city_path):
             df = pd.read_csv(
                 city_path,
-                dtype=constants.COLUMN_IMPORT_TYPES,
+                dtype=COLUMN_IMPORT_TYPES,
                 na_values=["N/A", "NA", "na", "", "NaN"],
                 keep_default_na=False,
             )
